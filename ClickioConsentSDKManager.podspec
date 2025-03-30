@@ -6,7 +6,7 @@ Pod::Spec.new do |spec|
   
   spec.module_name  = "ClickioConsentSDKManager"
   
-  spec.version      = "1.1.0"
+  spec.version      = "1.1.2"
   
   spec.summary      = "Native SDK for managing user consents, integrating a WebView-based consent dialog into iOS apps for streamlined privacy compliance."
   
@@ -39,5 +39,19 @@ Pod::Spec.new do |spec|
   spec.weak_frameworks = "AppTrackingTransparency", "Combine"
   
   spec.swift_version = '5.0'
+  
+  spec.pod_target_xcconfig = {
+    'CODE_SIGNING_REQUIRED' => 'NO',
+    'CODE_SIGNING_ALLOWED' => 'NO',
+    'EXPANDED_CODE_SIGN_IDENTITY' => ''
+    'ENABLE_USER_SCRIPT_SANDBOXING' => 'NO'
+  }
+  
+  # Settings for host-project
+  spec.user_target_xcconfig = {
+    'CODE_SIGNING_REQUIRED' => 'NO',
+    'CODE_SIGNING_ALLOWED' => 'NO'
+    'ENABLE_USER_SCRIPT_SANDBOXING' => 'NO'
+  }
 
 end
