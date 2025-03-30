@@ -4,7 +4,9 @@ Pod::Spec.new do |spec|
 
   spec.name         = "ClickioConsentSDKManager"
   
-  spec.version      = "1.0.6"
+  spec.module_name  = "ClickioConsentSDKManager"
+  
+  spec.version      = "1.1.0"
   
   spec.summary      = "Native SDK for managing user consents, integrating a WebView-based consent dialog into iOS apps for streamlined privacy compliance."
   
@@ -30,10 +32,12 @@ Pod::Spec.new do |spec|
   
   spec.source       = { :git => "https://github.com/ClickioTech/ClickioConsentSDK-IOS.git", :tag => "#{spec.version}" }
   
-  spec.vendored_frameworks = 'ClickioConsentSDKManager.xcframework'
+  spec.source_files = ["Sources/**/*.swift"]
+
+  spec.frameworks = "WebKit", "UIKit", "Foundation"
   
-  spec.weak_frameworks = "AppTrackingTransparency", "Combine", "WebKit", "UIKit", "Foundation"
+  spec.weak_frameworks = "AppTrackingTransparency", "Combine"
   
-  spec.pod_target_xcconfig = { 'SWIFT_VERSION' => '5.0' }
+  spec.swift_version = '5.0'
 
 end
