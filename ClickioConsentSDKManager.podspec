@@ -30,7 +30,7 @@ Pod::Spec.new do |spec|
   
   spec.source       = { :git => "https://github.com/ClickioTech/ClickioConsentSDK-IOS.git", :tag => "#{spec.version}" }
   
-  spec.vendored_frameworks = 'Frameworks/ClickioConsentSDKManager.xcframework'
+  spec.source_files = ["Sources/**/*.swift"]
   
   spec.frameworks = "WebKit", "UIKit", "Foundation"
   
