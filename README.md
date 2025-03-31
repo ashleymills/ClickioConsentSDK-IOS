@@ -27,7 +27,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', '~> 1.0.0'
+  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git'
 end
 ```
 
