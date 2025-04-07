@@ -11,6 +11,7 @@
 		C41A0DF52D88A85000519174 /* AdjustChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41A0DF42D88A84A00519174 /* AdjustChecker.swift */; };
 		C41A0DF82D88B29A00519174 /* AirBridgeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41A0DF72D88B29A00519174 /* AirBridgeChecker.swift */; };
 		C41A0DFB2D88B63E00519174 /* AppsFlyerChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41A0DFA2D88B63E00519174 /* AppsFlyerChecker.swift */; };
+		C4325CAD2D9AB7D500F72035 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C4325CAC2D9AB7D500F72035 /* PrivacyInfo.xcprivacy */; };
 		C4CF27102D83396E008E8BA2 /* WebViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF270D2D83396E008E8BA2 /* WebViewManager.swift */; };
 		C4CF27112D83396E008E8BA2 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF270B2D83396E008E8BA2 /* WebViewController.swift */; };
 		C4CF27122D83396E008E8BA2 /* ClickioConsentSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF27002D83396E008E8BA2 /* ClickioConsentSDK.swift */; };
@@ -26,6 +27,7 @@
 		C41A0DF42D88A84A00519174 /* AdjustChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustChecker.swift; sourceTree = "<group>"; };
 		C41A0DF72D88B29A00519174 /* AirBridgeChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirBridgeChecker.swift; sourceTree = "<group>"; };
 		C41A0DFA2D88B63E00519174 /* AppsFlyerChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerChecker.swift; sourceTree = "<group>"; };
+		C4325CAC2D9AB7D500F72035 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C4CF26F02D8338FE008E8BA2 /* ClickioConsentSDKManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ClickioConsentSDKManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4CF26FE2D83396E008E8BA2 /* ATTManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTManager.swift; sourceTree = "<group>"; };
 		C4CF27002D83396E008E8BA2 /* ClickioConsentSDK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickioConsentSDK.swift; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 				C4CF27082D83396E008E8BA2 /* EventLogger */,
 				C4CF270A2D83396E008E8BA2 /* ExportData */,
 				C4CF270F2D83396E008E8BA2 /* WebView */,
+				C4325CAC2D9AB7D500F72035 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -274,6 +277,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4325CAD2D9AB7D500F72035 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,7 +320,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Test Tracking Permission";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your consent helps us deliver personalized ads";
 				INFOPLIST_OUTPUT_FORMAT = "same-as-input";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -357,7 +361,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Test Tracking Permission";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your consent helps us deliver personalized ads";
 				INFOPLIST_OUTPUT_FORMAT = "same-as-input";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
