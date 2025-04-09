@@ -49,8 +49,6 @@ Pod::Spec.new do |spec|
   
   # Settings for host-project
   spec.user_target_xcconfig = {
-    'CODE_SIGNING_REQUIRED' => 'NO',
-    'CODE_SIGNING_ALLOWED' => 'NO',
     'ENABLE_USER_SCRIPT_SANDBOXING' => 'NO'
   }
 
