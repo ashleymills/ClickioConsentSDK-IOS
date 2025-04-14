@@ -320,7 +320,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your consent helps us deliver personalized ads";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app collects and tracks your usage data for the purpose of delivering personalized advertisements and measuring ad performance. By using this app, you acknowledge and agree that your information may be processed and shared with our advertising partners.";
 				INFOPLIST_OUTPUT_FORMAT = "same-as-input";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -361,7 +361,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your consent helps us deliver personalized ads";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app collects and tracks your usage data for the purpose of delivering personalized advertisements and measuring ad performance. By using this app, you acknowledge and agree that your information may be processed and shared with our advertising partners.";
 				INFOPLIST_OUTPUT_FORMAT = "same-as-input";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
