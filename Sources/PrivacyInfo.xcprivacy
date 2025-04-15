@@ -21,7 +21,7 @@
                 <key>NSPrivacyCollectedDataType</key>
                 <string>NSPrivacyCollectedDataTypeUserID</string>
                  <key>NSPrivacyCollectedDataTypeTracking</key>
-                 <false />
+                 <true/>
                 <key>NSPrivacyCollectedDataTypePurposes</key>
                 <array>
                     <string>
