@@ -241,12 +241,13 @@ private extension ClickioConsentSDK {
             } else {
                 showWebViewManager(in: parentViewController, language: language)
             }
-        } else if !showATTFirst {
+        } else if !showATTFirst && attNeeded {
             // Flow 3: Display CMP first, then always request ATT permission irrespective of CMP choice
             logger.log("Displaying CMP first, then always requesting ATT permission irrespective of CMP choice", level: .info)
             showWebViewManager(in: parentViewController, language: language, completion: {
                 if #available(iOS 14, *) {
-                    ATTManager.shared.requestPermission { _ in
+                    ATTManager.shared.requestPermission { isGrantedAccess in
+                        self.logger.log("CMP flow completed, now requesting ATT permission", level: .debug)
                         // ATT result doesn't impact CMP here
                     }
                 }
