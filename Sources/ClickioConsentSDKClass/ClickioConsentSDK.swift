@@ -99,7 +99,7 @@ import Combine
     /**
      * Checks the current consent state of the user.
      - Returns: The current consent state:
-     * - not_applicable (if scope = ‘out of scope’),
+     * - not_applicable (if scope = 'out of scope'),
      * - gdpr_no_decision - scope = gdpr and force = true and force state is not changed during app session,
      * - gdpr_decision_obtained - scope = gdpr and force = false,
      * - us - scope = us.
@@ -224,7 +224,7 @@ private extension ClickioConsentSDK {
         self.webViewManager = WebViewManager(parentViewController: parentViewController)
         
         if !attNeeded {
-            // Flow 1: Bypassing ATT flow as not required
+            // Flow 1: Bypass ATT flow as not required
             logger.log("Bypassing ATT flow as not required", level: .info)
             showWebViewManager(in: parentViewController, language: language)
         } else if showATTFirst {
@@ -235,7 +235,7 @@ private extension ClickioConsentSDK {
                     if granted {
                         self?.showWebViewManager(in: parentViewController, language: language)
                     } else {
-                            self?.webViewManager?.rejectToAll(in: parentViewController)
+                        self?.webViewManager?.rejectToAll(in: parentViewController)
                     }
                 }
             } else {
@@ -245,12 +245,9 @@ private extension ClickioConsentSDK {
             // Flow 3: Display CMP first, then always request ATT permission irrespective of CMP choice
             logger.log("Displaying CMP first, then always requesting ATT permission irrespective of CMP choice", level: .info)
             showWebViewManager(in: parentViewController, language: language, completion: {
-                if #available(iOS 14, *) {
-                    ATTManager.shared.requestPermission { isGrantedAccess in
-                        self.logger.log("CMP flow completed, now requesting ATT permission", level: .debug)
+                    ATTManager.shared.requestPermission { _ in
                         // ATT result doesn't impact CMP here
                     }
-                }
             })
         }
     }
@@ -260,7 +257,7 @@ private extension ClickioConsentSDK {
         language: String? = nil,
         completion: (() -> Void)? = nil
     ) {
-            self.webViewManager?.presentConsentDialog(in: parentViewController, language: language)
+        self.webViewManager?.presentConsentDialog(in: parentViewController, language: language, completion: completion)
     }
 }
 
