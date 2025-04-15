@@ -28,7 +28,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', '~> 0.0.1'
+  pod 'ClickioConsentSDKManager', '~> 1.0.0'
 end
 ```
 
@@ -38,7 +38,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '0.0.1'
+  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.0'
 end
 ```
 
@@ -131,7 +131,6 @@ ClickioConsentSDK.shared.openDialog(
     language: String? = nil, 
     in parentViewController: UIViewController? = nil, 
     showATTFirst: Bool, 
-    alwaysShowCMP: Bool, 
     attNeeded: Bool
 ) {
      // This completion block will be called post-dismissal. Handle consent results, 
@@ -153,8 +152,6 @@ ClickioConsentSDK.shared.openDialog(
 
 -   **`showATTFirst`**  – Allows you to specify whether an ATT permission should be displayed first. 
 
--   **`alwaysShowCMP`**  – Allows you to specify whether the CMP should be displayed regardless given ATT permission.
-
 -   **`attNeeded`**  – Allows you to specify whether an ATT permission is necessary.
     - If your app has it's own ATT Permission manager you just pass `false` in `showATTFirst` & `attNeeded` parameters and call your own ATT method. 
     Keep in mind that in this case consent screen will be shown regardless given ATT Permission.
@@ -166,40 +163,26 @@ ClickioConsentSDK.shared.openDialog(
 ClickioConsentSDK.shared.openDialog(
     mode: ClickioConsentSDK.DialogMode, 
     showATTFirst: true, 
-    alwaysShowCMP: false, 
     attNeeded: true
 ) {
     print("First scenario")
 }
 ```
-2. **Show ATT Permission first, then show Consent Dialog regardless of whether the user has granted ATT Permission or not:**
-```Swift
-ClickioConsentSDK.shared.openDialog(
-    mode: ClickioConsentSDK.DialogMode, 
-    showATTFirst: true, 
-    alwaysShowCMP: true, 
-    attNeeded: true
-) {
-    print("Second scenario")
-}
-```
-3. **Show Consent Dialog first, then show ATT Permission regardless user choice in the Consent Dialog:**
+2. **Show Consent Dialog first, then show ATT Permission regardless user choice in the Consent Dialog:**
 ```Swift
 ClickioConsentSDK.shared.openDialog(
     mode: ClickioConsentSDK.DialogMode, 
     showATTFirst: false, 
-    alwaysShowCMP: true, 
     attNeeded: true
 ) {
     print("Third scenario")
 }
 ```
-4. **Show only Consent Dialog bypassing ATT Permission demonstration:**
+3. **Show only Consent Dialog bypassing ATT Permission demonstration:**
 ```Swift
 ClickioConsentSDK.shared.openDialog(
     mode: ClickioConsentSDK.DialogMode, 
-    showATTFirst: false, 
-    alwaysShowCMP: true, 
+    showATTFirst: false,
     attNeeded: false
 ) {
     print("Fourth scenario")

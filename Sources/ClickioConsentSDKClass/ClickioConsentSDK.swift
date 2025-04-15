@@ -99,7 +99,7 @@ import Combine
     /**
      * Checks the current consent state of the user.
      - Returns: The current consent state:
-     * - not_applicable (if scope = ‘out of scope’),
+     * - not_applicable (if scope = 'out of scope'),
      * - gdpr_no_decision - scope = gdpr and force = true and force state is not changed during app session,
      * - gdpr_decision_obtained - scope = gdpr and force = false,
      * - us - scope = us.
@@ -145,11 +145,10 @@ import Combine
     
     // MARK: - Dialog manipulations & debug
     /**
-     *  Opens the consent dialog regardless ATT permission status.
+     *  Opens the consent dialog depending ATT permission status.
      * - Parameter mode: The mode in which to open the dialog (`default` or `resurface`).
      * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
      * - Parameter showATTFirst:`true` if ATT should be displayed first.
-     * - Parameter alwaysShowCMP: `true` if CMP should be displayed regardless ATT choice.
      * - Parameter attNeeded: `true` if ATT is necessary.
      * - language:   An optional parameter to force the UI language.
      */
@@ -158,7 +157,6 @@ import Combine
         language: String? = nil,
         in parentViewController: UIViewController? = nil,
         showATTFirst: Bool,
-        alwaysShowCMP: Bool,
         attNeeded: Bool,
         completion: (() -> Void)? = nil
     ) {
@@ -184,7 +182,6 @@ import Combine
                 handleConsentAndATTFlow(
                     language: language,
                     showATTFirst: showATTFirst,
-                    alwaysShowCMP: alwaysShowCMP,
                     attNeeded: attNeeded,
                     in: presentingVC
                 )
@@ -194,7 +191,6 @@ import Combine
                 handleConsentAndATTFlow(
                     language: language,
                     showATTFirst: showATTFirst,
-                    alwaysShowCMP: alwaysShowCMP,
                     attNeeded: attNeeded,
                     in: presentingVC
                 )
@@ -217,60 +213,42 @@ private extension ClickioConsentSDK {
      * Handles available ATT & CMP flows supported by SDK.
      * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
      * - Parameter showATTFirst:`true` if ATT should be displayed first.
-     * - Parameter alwaysShowCMP: `true` if CMP should be displayed regardless ATT choice.
      * - Parameter attNeeded: `true` if ATT is necessary.
      */
     func handleConsentAndATTFlow(
         language: String? = nil,
         showATTFirst: Bool,
-        alwaysShowCMP: Bool,
         attNeeded: Bool,
         in parentViewController: UIViewController
     ) {
         self.webViewManager = WebViewManager(parentViewController: parentViewController)
         
         if !attNeeded {
-            // Flow 4: Bypassing ATT flow as not required
+            // Flow 1: Bypass ATT flow as not required
             logger.log("Bypassing ATT flow as not required", level: .info)
             showWebViewManager(in: parentViewController, language: language)
-        } else if showATTFirst && !alwaysShowCMP {
-            // Flow 1: Show ATT first, then display CMP only if ATT consent is granted
-            logger.log("Flow 1: Show ATT first, then display CMP only if ATT consent is granted", level: .info)
+        } else if showATTFirst {
+            // Flow 2: Show ATT first, then display CMP only if ATT consent is granted
+            logger.log("Showing ATT dialog first, then displaying CMP only if ATT consent is granted", level: .info)
             if #available(iOS 14, *) {
                 ATTManager.shared.requestPermission { [weak self] granted in
                     if granted {
                         self?.showWebViewManager(in: parentViewController, language: language)
                     } else {
-                            self?.webViewManager?.rejectToAll(in: parentViewController)
+                        self?.webViewManager?.rejectToAll(in: parentViewController)
                     }
                 }
             } else {
                 showWebViewManager(in: parentViewController, language: language)
             }
-        } else if !showATTFirst && alwaysShowCMP {
-            // Flow 2: Display CMP first, then always request ATT permission irrespective of CMP choice
-            logger.log("Flow 2: Display CMP first, then always request ATT permission irrespective of CMP choice", level: .info)
+        } else if !showATTFirst && attNeeded {
+            // Flow 3: Display CMP first, then always request ATT permission irrespective of CMP choice
+            logger.log("Displaying CMP first, then always requesting ATT permission irrespective of CMP choice", level: .info)
             showWebViewManager(in: parentViewController, language: language, completion: {
-                if #available(iOS 14, *) {
                     ATTManager.shared.requestPermission { _ in
                         // ATT result doesn't impact CMP here
                     }
-                }
             })
-        } else if showATTFirst && alwaysShowCMP {
-            // Flow 3: Show ATT first, then display CMP regardless of ATT result
-            self.logger.log("Flow 3: Show ATT, then display CMP regardless of ATT result", level: .info)
-            if #available(iOS 14, *) {
-                ATTManager.shared.requestPermission { [weak self] _ in
-                    self?.showWebViewManager(in: parentViewController, language: language)
-                }
-            } else {
-                showWebViewManager(in: parentViewController, language: language)
-            }
-        } else {
-            // Fallback: Presenting CMP
-            logger.log("Fallback: Presenting CMP", level: .info)
-            showWebViewManager(in: parentViewController, language: language)
         }
     }
     
@@ -279,7 +257,7 @@ private extension ClickioConsentSDK {
         language: String? = nil,
         completion: (() -> Void)? = nil
     ) {
-            self.webViewManager?.presentConsentDialog(in: parentViewController, language: language)
+        self.webViewManager?.presentConsentDialog(in: parentViewController, language: language, completion: completion)
     }
 }
 
