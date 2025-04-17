@@ -175,7 +175,7 @@ ClickioConsentSDK.shared.openDialog(
     showATTFirst: false, 
     attNeeded: true
 ) {
-    print("Third scenario")
+    print("Second scenario")
 }
 ```
 3. **Show only Consent Dialog bypassing ATT Permission demonstration:**
@@ -185,7 +185,7 @@ ClickioConsentSDK.shared.openDialog(
     showATTFirst: false,
     attNeeded: false
 ) {
-    print("Fourth scenario")
+    print("Third scenario")
 }
 ```
 **Note: we suggest you to use this approach only if you handle ATT Permission on your own.**
