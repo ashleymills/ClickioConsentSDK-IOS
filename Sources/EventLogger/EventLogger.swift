@@ -21,7 +21,7 @@ import os
     }
     
     // MARK: Properties
-    private var mode: Mode = .disabled
+    private var mode: Mode = .verbose
     private var currentLevel: EventLevel = .error
     private let log = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "ClickioSDK", category: "ClickioSDK")
     
