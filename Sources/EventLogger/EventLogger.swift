@@ -36,8 +36,9 @@ import os
     
     // MARK: Internal method
     func log(_ message: String, level: EventLevel) {
-        print("LOG: [\(level)] \(message)")
         guard mode == .verbose, level.rawValue <= currentLevel.rawValue else { return }
+        
+        print("LOG: [\(level)] \(message)")
         os_log("%{public}@", log: log, type: osLogType(for: level), message)
     }
     
