@@ -19,7 +19,7 @@ Before integrating `ClickioConsentSDKManager` (hereinafter reffered to as the `C
  **Swift Package Manager**
 -   File > Swift Packages > Add Package Dependency
 -   Add  `https://github.com/ClickioTech/ClickioConsentSDK-IOS.git`
--   Select "Up to Next Major" with "0.0.1"
+-   Select "Up to Next Major" with "1.0.0"
 
  **CocoaPods**  
  -   You can install ClickioConsentSDKManager pod from CocoaPods library:  
@@ -28,7 +28,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', '~> 0.0.1'
+  pod 'ClickioConsentSDKManager', '~> 1.0.0'
 end
 ```
 
@@ -38,7 +38,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '0.0.1'
+  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.0'
 end
 ```
 
@@ -75,7 +75,7 @@ In this code after successful initialization, the SDK will open the Consent Wind
 ## Setup and Usage
 
 ### App Tracking Transparency Permission (ATT Permission)
-`Clickio SDK` supports [four distinct scenarios](#available-flows-examples) for handling `ATT permissions`. If your application collects user data and shares it with third parties for tracking purposes across apps and websites, you must:​
+`Clickio SDK` supports [three distinct scenarios](#available-flows-examples) for handling `ATT permissions`. If your application collects user data and shares it with third parties for tracking purposes across apps and websites, you must:​
 
 1.  Include the [`NSUserTrackingUsageDescription`](https://developer.apple.com/documentation/BundleResources/Information-Property-List/NSUserTrackingUsageDescription)  key in your app's `Info.plist` file.​
     

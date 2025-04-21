@@ -40,9 +40,6 @@ import Combine
         onConsentUpdatedListener
     }
     
-    /**
-     * Updates consent status.
-     */
     func updateConsentStatus() {
         if var status = consentStatus {
             status.force = false
@@ -148,9 +145,9 @@ import Combine
      *  Opens the consent dialog depending ATT permission status.
      * - Parameter mode: The mode in which to open the dialog (`default` or `resurface`).
      * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
+     * - Parameter in parentViewController: optional, defines view controller on which WebView should be presented.
      * - Parameter showATTFirst:`true` if ATT should be displayed first.
      * - Parameter attNeeded: `true` if ATT is necessary.
-     * - language:   An optional parameter to force the UI language.
      */
     public func openDialog(
         mode: DialogMode = .default,
@@ -209,12 +206,6 @@ import Combine
 
 // MARK: - Handling of consent & ATT permission
 private extension ClickioConsentSDK {
-    /**
-     * Handles available ATT & CMP flows supported by SDK.
-     * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
-     * - Parameter showATTFirst:`true` if ATT should be displayed first.
-     * - Parameter attNeeded: `true` if ATT is necessary.
-     */
     func handleConsentAndATTFlow(
         language: String? = nil,
         showATTFirst: Bool,
@@ -263,9 +254,6 @@ private extension ClickioConsentSDK {
 
 // MARK: - Consent manipulations methods
 private extension ClickioConsentSDK {
-    /**
-     * Subscribes to consent updates.
-     */
     func subscribeToConsentUpdates() {
         ConsentDataManager.shared.consentUpdatedPublisher
             .sink { [weak self] in
@@ -275,9 +263,6 @@ private extension ClickioConsentSDK {
             .store(in: &cancellables)
     }
     
-    /**
-     * Fetches the current consent status.
-     */
     func fetchConsentStatus() async {
         logger.log("Started fetching consent status", level: .debug)
         
