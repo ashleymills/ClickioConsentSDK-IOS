@@ -61,6 +61,7 @@ import Combine
         if let error = consentStatus?.error {
             logger.log("Initialization failed: \(error)", level: .error)
         } else { onReadyListener?() }
+        logger.log("Initialization finished", level: .info)
         setConsentsIfApplicable()
     }
     
@@ -197,10 +198,18 @@ import Combine
     
     /**
      *  Allows the SDK user to set the logging mode.
-     *  - Parameter mode: The desired logging mode.
+     *  - Parameter mode: The desired logging mode: disabled or verbose.
      */
     public func setLogsMode(_ mode: EventLogger.Mode) {
         logger.setMode(mode)
+    }
+    
+    /**
+     *  Allows the SDK user to set the logging level.
+     *  - Parameter level: The desired logging level: error, info or debug.
+     */
+    public func setLogsLevel(_ level: EventLogger.EventLevel) {
+        logger.setLogsLevel(level)
     }
 }
 

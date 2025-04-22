@@ -107,8 +107,21 @@ class Config(
 
 [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)
 
-### Handling SDK Readiness
+### Setup of logging
 
+- Use the `setLogsMode` method to set-up desired logging mode: it can be `.disabled` or `.verbose`:
+```Swift
+ClickioConsentSDK.shared.setLogsMode(.verbose)
+```
+- Use `setLogsLevel` method to set-up desired logging level: it can be `.error`, `.info` or `.debug`:
+```Swift
+ClickioConsentSDK.shared.setLogsLevel(.info)
+```
+  
+Note: these methods are optional. If you won't use them, by default you will receive logs of all levels in your console.
+
+### Handling SDK Readiness
+  
 Use the  `onReady`  callback to execute actions once the SDK is fully loaded:
 
 ```Swift
@@ -138,7 +151,6 @@ ClickioConsentSDK.shared.openDialog(
     print("Dialog closed") 
 }
 ```
-
 
 ##### Parameters:
 
