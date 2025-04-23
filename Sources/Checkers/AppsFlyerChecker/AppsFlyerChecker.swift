@@ -36,27 +36,5 @@ final class AppsFlyerChecker {
             logger.log("AppsFlyer SDK is not found", level: .error)
             return
         }
-        
-        let sharedSelector = Selector(("shared"))
-        guard appsFlyerClass.responds(to: sharedSelector),
-              let instance = appsFlyerClass.perform(sharedSelector).takeUnretainedValue() as? NSObject else {
-            logger.log("AppsFlyer.shared instance is not available", level: .error)
-            return
-        }
-        
-        let consentData: [String: Any] = [
-            "is_eea": (consentStatus?.scope == "gdpr") ? true : false,
-            "ad_user_data": consent.adUserDataGranted == true ? "granted" : "denied",
-            "ad_personalization": consent.adPersonalizationGranted == true ? "granted" : "denied"
-        ]
-        
-        let selector = Selector(("setConsentData:"))
-        guard instance.responds(to: selector) else {
-            logger.log("AppsFlyerLib does not respond to setConsentData:", level: .error)
-            return
-        }
-        
-        instance.perform(selector, with: NSDictionary(dictionary: consentData))
-        logger.log("Consent sent to AppsFlyer", level: .info)
     }
 }
