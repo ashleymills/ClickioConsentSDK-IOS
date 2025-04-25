@@ -42,14 +42,9 @@ struct EventLoggerDefaultValues {
         EventLoggerDefaultValues.mode = mode
     }
     
-    public func setLogsLevel(_ level: EventLevel) {
-        EventLoggerDefaultValues.logLevel = level
-    }
-    
     // MARK: Internal method
     func log(_ message: String, level: EventLevel) {
         guard EventLoggerDefaultValues.mode == .verbose, level.rawValue <= EventLoggerDefaultValues.logLevel.rawValue else { return }
-        print("LOG: [\(level)] \(message)")
         os_log("%{public}@", log: self.log, type: self.osLogType(for: level), message)
     }
     

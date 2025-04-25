@@ -56,7 +56,6 @@ import Combine
         logger.log("Initialization started", level: .info)
         self.exportData = ExportData()
         self.configuration = configuration
-        await fetchConsentStatus()
         
         if let error = consentStatus?.error {
             logger.log("Initialization failed: \(error)", level: .error)
@@ -203,14 +202,6 @@ import Combine
     public func setLogsMode(_ mode: EventLogger.Mode) {
         logger.setMode(mode)
     }
-    
-    /**
-     *  Allows the SDK user to set the logging level.
-     *  - Parameter level: The desired logging level: error, info or debug.
-     */
-    public func setLogsLevel(_ level: EventLogger.EventLevel) {
-        logger.setLogsLevel(level)
-    }
 }
 
 // MARK: - Handling of consent & ATT permission
@@ -226,13 +217,19 @@ private extension ClickioConsentSDK {
         if !attNeeded {
             // Flow 1: Bypass ATT flow as not required
             logger.log("Bypassing ATT flow as not required", level: .info)
+            Task {
+                await self.fetchConsentStatus()
+            }
             showWebViewManager(in: parentViewController, language: language)
         } else if showATTFirst {
             // Flow 2: Show ATT first, then display CMP only if ATT consent is granted
             logger.log("Showing ATT dialog first, then displaying CMP only if ATT consent is granted", level: .info)
             if #available(iOS 14, *) {
-                ATTManager.shared.requestPermission { [weak self] granted in
-                    if granted {
+                ATTManager.shared.requestPermission { [weak self] isGranted in
+                    if isGranted {
+                        Task {
+                            await self?.fetchConsentStatus()
+                        }
                         self?.showWebViewManager(in: parentViewController, language: language)
                     } else {
                         self?.webViewManager?.rejectToAll(in: parentViewController)
@@ -245,8 +242,12 @@ private extension ClickioConsentSDK {
             // Flow 3: Display CMP first, then always request ATT permission irrespective of CMP choice
             logger.log("Displaying CMP first, then always requesting ATT permission irrespective of CMP choice", level: .info)
             showWebViewManager(in: parentViewController, language: language, completion: {
-                    ATTManager.shared.requestPermission { _ in
-                        // ATT result doesn't impact CMP here
+                    ATTManager.shared.requestPermission { isGranted in
+                        if isGranted {
+                            Task {
+                                await self.fetchConsentStatus()
+                            }
+                        }
                     }
             })
         }
