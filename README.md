@@ -19,7 +19,7 @@ Before integrating `ClickioConsentSDKManager` (hereinafter reffered to as the `C
  **Swift Package Manager**
 -   File > Swift Packages > Add Package Dependency
 -   Add  `https://github.com/ClickioTech/ClickioConsentSDK-IOS.git`
--   Select "Up to Next Major" with "1.0.0"
+-   Select "Up to Next Major" with "1.0.3"
 
  **CocoaPods**  
  -   You can install ClickioConsentSDKManager pod from CocoaPods library:  
@@ -28,7 +28,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', '~> 1.0.0'
+  pod 'ClickioConsentSDKManager', '~> 1.0.3'
 end
 ```
 
@@ -38,7 +38,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.0'
+  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.3'
 end
 ```
 
@@ -75,13 +75,16 @@ In this code after successful initialization, the SDK will open the Consent Wind
 ## Setup and Usage
 
 ### App Tracking Transparency Permission (ATT Permission)
-`Clickio SDK` supports [four distinct scenarios](#available-flows-examples) for handling `ATT permissions`. If your application collects user data and shares it with third parties for tracking purposes across apps and websites, you must:​
+`Clickio SDK` supports [two distinct scenarios](#available-flows-examples) for handling `ATT permissions`. If your application collects user data and shares it with third parties for tracking purposes across apps and websites, you must:​
 
 1.  Include the [`NSUserTrackingUsageDescription`](https://developer.apple.com/documentation/BundleResources/Information-Property-List/NSUserTrackingUsageDescription)  key in your app's `Info.plist` file.​
     
 2.  Select an appropriate ATT permission display scenario provided by the SDK through [`openDialog`](#opening-the-consent-dialog) method.
 
-If your application already manages ATT permissions independently and includes the [`NSUserTrackingUsageDescription`](https://developer.apple.com/documentation/BundleResources/Information-Property-List/NSUserTrackingUsageDescription)  key, you can skip this configuration step and proceed with the integration.
+If your application already manages ATT permissions independently and includes the [`NSUserTrackingUsageDescription`](https://developer.apple.com/documentation/BundleResources/Information-Property-List/NSUserTrackingUsageDescription)  key, you can skip this configuration step and proceed with the integration. 
+
+#### Important:
+- **make sure that user has given permission in the ATT dialog and only then perfrom [`openDialog`](#opening-the-consent-dialog) method call! Showing CMP regardles given ATT Permission is not recommended by Apple. Moreover, [`openDialog`](#opening-the-consent-dialog) API call can be blocked by Apple until user makes their choice.**
 
 For more information about app tracking and privacy, see [User Privacy and Data Use](https://developer.apple.com/app-store/user-privacy-and-data-use/) and [App Privacy Details](https://developer.apple.com/app-store/app-privacy-details/).
 
@@ -107,8 +110,16 @@ class Config(
 
 [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)
 
-### Handling SDK Readiness
+### Setup of logging
 
+- Use the `setLogsMode` method to set-up desired logging mode: it can be `.disabled` or `.verbose`:
+```Swift
+ClickioConsentSDK.shared.setLogsMode(.verbose)
+```  
+Note: this method is optional. If you won't use it, by default you will receive logs of all levels in your console.
+
+### Handling SDK Readiness
+  
 Use the  `onReady`  callback to execute actions once the SDK is fully loaded:
 
 ```Swift
@@ -129,9 +140,7 @@ Clickio SDK provides the `openDialog` method to display the consent screen both 
 ClickioConsentSDK.shared.openDialog(
     mode: ClickioConsentSDK.DialogMode,
     language: String? = nil, 
-    in parentViewController: UIViewController? = nil, 
-    showATTFirst: Bool, 
-    alwaysShowCMP: Bool, 
+    in parentViewController: UIViewController? = nil,
     attNeeded: Bool
 ) {
      // This completion block will be called post-dismissal. Handle consent results, 
@@ -139,7 +148,6 @@ ClickioConsentSDK.shared.openDialog(
     print("Dialog closed") 
 }
 ```
-
 
 ##### Parameters:
 
@@ -151,61 +159,32 @@ ClickioConsentSDK.shared.openDialog(
 
 -   **`in`**  – Allows you to explicitly specify on which `UIViewController` the dialog will be presented. This parameter is optional, and if not provided, the SDK will automatically use the root controller for presentation.
 
--   **`showATTFirst`**  – Allows you to specify whether an ATT permission should be displayed first. 
-
--   **`alwaysShowCMP`**  – Allows you to specify whether the CMP should be displayed regardless given ATT permission.
-
 -   **`attNeeded`**  – Allows you to specify whether an ATT permission is necessary.
-    - If your app has it's own ATT Permission manager you just pass `false` in `showATTFirst` & `attNeeded` parameters and call your own ATT method. 
-    Keep in mind that in this case consent screen will be shown regardless given ATT Permission.
+    - If your app has it's own ATT Permission manager you just pass `false` in `attNeeded` parameter and call your own ATT method. 
 
 #### Available flows examples
 
 1. **Show ATT Permission first, then show Consent Dialog only if user has granted ATT Permission. This approach is recommended by Apple:**
 ```Swift
 ClickioConsentSDK.shared.openDialog(
-    mode: ClickioConsentSDK.DialogMode, 
-    showATTFirst: true, 
-    alwaysShowCMP: false, 
+    mode: ClickioConsentSDK.DialogMode,
     attNeeded: true
 ) {
     print("First scenario")
 }
 ```
-2. **Show ATT Permission first, then show Consent Dialog regardless of whether the user has granted ATT Permission or not:**
+2. **Show only Consent Dialog bypassing ATT Permission demonstration:**
 ```Swift
 ClickioConsentSDK.shared.openDialog(
-    mode: ClickioConsentSDK.DialogMode, 
-    showATTFirst: true, 
-    alwaysShowCMP: true, 
-    attNeeded: true
+    mode: ClickioConsentSDK.DialogMode,
+    attNeeded: false
 ) {
     print("Second scenario")
 }
 ```
-3. **Show Consent Dialog first, then show ATT Permission regardless user choice in the Consent Dialog:**
-```Swift
-ClickioConsentSDK.shared.openDialog(
-    mode: ClickioConsentSDK.DialogMode, 
-    showATTFirst: false, 
-    alwaysShowCMP: true, 
-    attNeeded: true
-) {
-    print("Third scenario")
-}
-```
-4. **Show only Consent Dialog bypassing ATT Permission demonstration:**
-```Swift
-ClickioConsentSDK.shared.openDialog(
-    mode: ClickioConsentSDK.DialogMode, 
-    showATTFirst: false, 
-    alwaysShowCMP: true, 
-    attNeeded: false
-) {
-    print("Fourth scenario")
-}
-```
-**Note: we suggest you to use this approach only if you handle ATT Permission on your own.**
+#### Important:
+- **we suggest you to use this approach only if you handle ATT Permission on your own.**
+- **make sure that user has given permission in the ATT dialog and only then perfrom [`openDialog`](#opening-the-consent-dialog) method call!Otherwise it will lead to incorrect work of the SDK: showing CMP regardles given ATT Permission is not recommended by Apple. Moreover, [`openDialog`](#opening-the-consent-dialog) API calls to SDK's domains will be blocked by Apple until user provides their permission in ATT dialog.**
 
 ----------
 
@@ -409,6 +388,11 @@ Represents the status of Google Consent Mode.
 -   [Airbridge](https://www.airbridge.io/)
 -   [AppsFlyer](https://www.appsflyer.com/)
 
+#### Important:
+  - Interactions with `ClickioConsentSDK` should be performed **after initializing the third-party SDKs** since `ClickioConsentSDK` only transmits consent flags.
+  - **Ensure** that you have completed the required tracking setup for Adjust, Airbridge, or AppsFlyer before integrating `ClickioConsentSDK`. This includes proper initialization and configuration of the SDK according to the vendor’s documentation.
+  - If you're using **AppsFlyer** and need to support GDPR compliance via TCF, make sure to enable TCF data collection before SDK initialization: `enableTCFDataCollection(true)`. This allows AppsFlyer to automatically gather consent values (like `tcString`) from the CMP.
+  
 ### Firebase Analytics
 
 If the Firebase Analytics SDK is present in the project, the Clickio SDK will automatically send Google Consent flags to Firebase if  _Clickio Google Consent Mode_  integration  **enabled**.
@@ -435,10 +419,10 @@ For example, you can subscribe to the  `onConsentUpdated`  callback and call  `g
 ```Swift
 let exportData = ExportData()
 ClickioConsentSDK.shared.onConsentUpdated { 
-	var googleConsentFlags = exportData.getGoogleConsentMode()
-	if googleConsentFlags != nil {
-		// Send values to other SDK
-	}
+    var googleConsentFlags = exportData.getGoogleConsentMode()
+    if googleConsentFlags != nil {
+        // Send values to other SDK
+    }
 }
 ```
 

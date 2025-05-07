@@ -27,7 +27,7 @@ import Combine
     // MARK: Scope properties
     private let gdprScope = "gdpr"
     private let usScope = "us"
-    private let outOfScope = "out_of_scope"
+    private let outOfScope = "out of scope"
     
     // MARK: Initialization
     private override init() {
@@ -64,7 +64,7 @@ import Combine
         if let error = consentStatus?.error {
             logger.log("Initialization failed: \(error)", level: .error)
         } else { onReadyListener?() }
-        setConsentsIfApplicable()
+        logger.log("Initialization finished", level: .info)
     }
     
     /**
@@ -148,8 +148,7 @@ import Combine
      *  Opens the consent dialog regardless ATT permission status.
      * - Parameter mode: The mode in which to open the dialog (`default` or `resurface`).
      * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
-     * - Parameter showATTFirst:`true` if ATT should be displayed first.
-     * - Parameter alwaysShowCMP: `true` if CMP should be displayed regardless ATT choice.
+     * - Parameter in parentViewController: optional, defines view controller on which WebView should be presented.
      * - Parameter attNeeded: `true` if ATT is necessary.
      * - language:   An optional parameter to force the UI language.
      */
@@ -157,8 +156,6 @@ import Combine
         mode: DialogMode = .default,
         language: String? = nil,
         in parentViewController: UIViewController? = nil,
-        showATTFirst: Bool,
-        alwaysShowCMP: Bool,
         attNeeded: Bool,
         completion: (() -> Void)? = nil
     ) {
@@ -166,38 +163,93 @@ import Combine
         if let parent = parentViewController {
             presentingVC = parent
         } else if let rootVC = UIApplication.shared.connectedScenes
-                    .compactMap({ $0 as? UIWindowScene })
-                    .flatMap({ $0.windows })
-                    .first(where: { $0.isKeyWindow })?.rootViewController {
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?.rootViewController {
             presentingVC = rootVC
         } else {
             logger.log("No available ViewController for WebView presentation", level: .error)
             return
         }
         
-        logger.log("Consent Status: \(String(describing: consentStatus))", level: .debug)
-        logger.log("Scope: \(String(describing: consentStatus?.scope)), Force: \(String(describing: consentStatus?.force))", level: .debug)
+        self.webViewManager = WebViewManager(parentViewController: presentingVC)
         
         switch mode {
         case .default:
-            if consentStatus?.scope == gdprScope && consentStatus?.force == true {
-                handleConsentAndATTFlow(
-                    language: language,
-                    showATTFirst: showATTFirst,
-                    alwaysShowCMP: alwaysShowCMP,
-                    attNeeded: attNeeded,
-                    in: presentingVC
-                )
+            guard mode == .default else { return }
+            if attNeeded {
+                logger.log("Showing ATT dialog first, then displaying CMP in default mode only if ATT consent is granted", level: .info)
+                ATTManager.shared.requestPermission { isGranted in
+                    if isGranted {
+                        Task {
+                            await self.fetchConsentStatus()
+                            if self.consentStatus?.scope == self.gdprScope && self.consentStatus?.force == true {
+                                self.showWebViewManager(
+                                    in: presentingVC,
+                                    language: language,
+                                    completion: completion
+                                )
+                            } else {
+                                self.logger.log("Dialog not shown: decision already saved or user is located outside the EEA, GB, or CH regions", level: .info)
+                            }
+                        }
+                    } else {
+                        self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
+                    }
+                }
+            } else {
+                logger.log("Bypassing ATT flow as not required and showing CMP in default mode", level: .info)
+                Task {
+                    await fetchConsentStatus()
+                    if consentStatus?.scope == gdprScope && consentStatus?.force == true {
+                        showWebViewManager(
+                            in: presentingVC,
+                            language: language,
+                            completion: completion
+                        )
+                    } else {
+                        self.logger.log("Dialog not shown: decision already saved or user is located outside the EEA, GB, or CH regions", level: .info)
+                    }
+                }
             }
+            
         case .resurface:
             if consentStatus?.scope != outOfScope {
-                handleConsentAndATTFlow(
-                    language: language,
-                    showATTFirst: showATTFirst,
-                    alwaysShowCMP: alwaysShowCMP,
-                    attNeeded: attNeeded,
-                    in: presentingVC
-                )
+                if attNeeded {
+                    logger.log("Showing ATT dialog first, then displaying CMP in resurface mode only if ATT consent is granted", level: .info)
+                    ATTManager.shared.requestPermission { isGranted in
+                        if isGranted {
+                            Task {
+                                await self.fetchConsentStatus()
+                                if self.consentStatus?.scope != self.outOfScope {
+                                    self.showWebViewManager(
+                                        in: presentingVC,
+                                        language: language,
+                                        completion: completion
+                                    )
+                                } else {
+                                    self.logger.log("Dialog not shown: user is located outside EEA, GB, or CH regions", level: .info)
+                                }
+                            }
+                        } else {
+                            self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
+                        }
+                    }
+                } else {
+                    logger.log("Bypassing ATT flow as not required and showing CMP in resurface mode", level: .info)
+                    Task {
+                        await fetchConsentStatus()
+                        if consentStatus?.scope != outOfScope {
+                            showWebViewManager(
+                                in: presentingVC,
+                                language: language,
+                                completion: completion
+                            )
+                        } else {
+                            self.logger.log("Dialog not shown: user is located outside EEA, GB, or CH regions", level: .info)
+                        }
+                    }
+                }
             }
         }
     }
@@ -213,73 +265,26 @@ import Combine
 
 // MARK: - Handling of consent & ATT permission
 private extension ClickioConsentSDK {
-    /**
-     * Handles available ATT & CMP flows supported by SDK.
-     * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
-     * - Parameter showATTFirst:`true` if ATT should be displayed first.
-     * - Parameter alwaysShowCMP: `true` if CMP should be displayed regardless ATT choice.
-     * - Parameter attNeeded: `true` if ATT is necessary.
-     */
-    func handleConsentAndATTFlow(
-        language: String? = nil,
-        showATTFirst: Bool,
-        alwaysShowCMP: Bool,
-        attNeeded: Bool,
-        in parentViewController: UIViewController
-    ) {
-        self.webViewManager = WebViewManager(parentViewController: parentViewController)
-        
-        if !attNeeded {
-            // Flow 4: Bypassing ATT flow as not required
-            logger.log("Bypassing ATT flow as not required", level: .info)
-            showWebViewManager(in: parentViewController, language: language)
-        } else if showATTFirst && !alwaysShowCMP {
-            // Flow 1: Show ATT first, then display CMP only if ATT consent is granted
-            logger.log("Flow 1: Show ATT first, then display CMP only if ATT consent is granted", level: .info)
-            if #available(iOS 14, *) {
-                ATTManager.shared.requestPermission { [weak self] granted in
-                    if granted {
-                        self?.showWebViewManager(in: parentViewController, language: language)
-                    } else {
-                            self?.webViewManager?.rejectToAll(in: parentViewController)
-                    }
-                }
-            } else {
-                showWebViewManager(in: parentViewController, language: language)
-            }
-        } else if !showATTFirst && alwaysShowCMP {
-            // Flow 2: Display CMP first, then always request ATT permission irrespective of CMP choice
-            logger.log("Flow 2: Display CMP first, then always request ATT permission irrespective of CMP choice", level: .info)
-            showWebViewManager(in: parentViewController, language: language, completion: {
-                if #available(iOS 14, *) {
-                    ATTManager.shared.requestPermission { _ in
-                        // ATT result doesn't impact CMP here
-                    }
-                }
-            })
-        } else if showATTFirst && alwaysShowCMP {
-            // Flow 3: Show ATT first, then display CMP regardless of ATT result
-            self.logger.log("Flow 3: Show ATT, then display CMP regardless of ATT result", level: .info)
-            if #available(iOS 14, *) {
-                ATTManager.shared.requestPermission { [weak self] _ in
-                    self?.showWebViewManager(in: parentViewController, language: language)
-                }
-            } else {
-                showWebViewManager(in: parentViewController, language: language)
-            }
-        } else {
-            // Fallback: Presenting CMP
-            logger.log("Fallback: Presenting CMP", level: .info)
-            showWebViewManager(in: parentViewController, language: language)
-        }
-    }
-    
     func showWebViewManager(
         in parentViewController: UIViewController,
-        language: String? = nil,
+        language: String?,
         completion: (() -> Void)? = nil
     ) {
-            self.webViewManager?.presentConsentDialog(in: parentViewController, language: language)
+        let webviewClosed = {
+            Task {
+                await self.fetchConsentStatus()
+                DispatchQueue.main.async {
+                    self.onConsentUpdatedListener?()
+                }
+            }
+            completion?()
+        }
+        
+        webViewManager?.presentConsentDialog(
+            in: parentViewController,
+            language: language,
+            completion: webviewClosed
+        )
     }
 }
 
@@ -347,6 +352,8 @@ private extension ClickioConsentSDK {
                 consentStatus = status
                 isReady = true
                 
+                logger.log("Current consent status: Scope: \(String(describing: consentStatus?.scope)), Force: \(String(describing: consentStatus?.force))", level: .debug)
+
                 DispatchQueue.main.async {
                     self.logger.log("Calling onReady", level: .debug)
                     self.onReadyListener?()
