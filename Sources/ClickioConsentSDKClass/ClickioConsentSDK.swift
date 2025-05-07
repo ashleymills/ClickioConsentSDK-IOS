@@ -59,11 +59,6 @@ import Combine
         logger.log("Initialization started", level: .info)
         self.exportData = ExportData()
         self.configuration = configuration
-        await fetchConsentStatus()
-        
-        if let error = consentStatus?.error {
-            logger.log("Initialization failed: \(error)", level: .error)
-        } else { onReadyListener?() }
         logger.log("Initialization finished", level: .info)
     }
     
