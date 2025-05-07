@@ -184,7 +184,7 @@ ClickioConsentSDK.shared.openDialog(
 ```
 #### Important:
 - **we suggest you to use this approach only if you handle ATT Permission on your own.**
-- **make sure that user has given permission in the ATT dialog and only then perfrom [`openDialog`](#opening-the-consent-dialog) method call!Otherwise it will lead to incorrect work of the SDK: showing CMP regardles given ATT Permission is not recommended by Apple. Moreover, [`openDialog`](#opening-the-consent-dialog) API calls to SDK's domains will be blocked by Apple until user provides their permission in ATT dialog.**
+- **make sure that user has given permission in the ATT dialog and only then perfrom [`openDialog`](#opening-the-consent-dialog) method call! Otherwise it will lead to incorrect work of the SDK: showing CMP regardles given ATT Permission is not recommended by Apple. Moreover, [`openDialog`](#opening-the-consent-dialog) API calls to SDK's domains will be blocked by Apple until user provides their permission in ATT dialog.**
 
 ----------
 

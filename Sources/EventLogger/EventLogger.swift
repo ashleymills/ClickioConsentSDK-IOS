@@ -6,10 +6,24 @@
 import Foundation
 import os
 
+// MARK: - EventLoggerDefaultValues
+@MainActor
+struct EventLoggerDefaultValues {
+    // MARK: Default Logger values
+    static var mode: EventLogger.Mode = .verbose
+    static var logLevel: EventLogger.EventLevel = .debug
+}
+
 // MARK: - EventLogger
+@MainActor
 @objcMembers public final class EventLogger: NSObject {
+    // MARK: Initializer
+    nonisolated public override init() {
+          super.init()
+      }
+    
     // MARK: Enums
-    public enum Mode {
+    public enum Mode: Int {
         case disabled
         case verbose
     }
@@ -21,24 +35,17 @@ import os
     }
     
     // MARK: Properties
-    private var mode: Mode = .disabled
-    private var currentLevel: EventLevel = .error
     private let log = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "ClickioSDK", category: "ClickioSDK")
     
     // MARK: Public methods
     public func setMode(_ mode: Mode) {
-        self.mode = mode
-    }
-    
-    public func setLogLevel(_ level: EventLevel) {
-        self.currentLevel = level
+        EventLoggerDefaultValues.mode = mode
     }
     
     // MARK: Internal method
     func log(_ message: String, level: EventLevel) {
-        print("LOG: [\(level)] \(message)")
-        guard mode == .verbose, level.rawValue <= currentLevel.rawValue else { return }
-        os_log("%{public}@", log: log, type: osLogType(for: level), message)
+        guard EventLoggerDefaultValues.mode == .verbose, level.rawValue <= EventLoggerDefaultValues.logLevel.rawValue else { return }
+        os_log("%{public}@", log: self.log, type: self.osLogType(for: level), message)
     }
     
     // MARK: Private method

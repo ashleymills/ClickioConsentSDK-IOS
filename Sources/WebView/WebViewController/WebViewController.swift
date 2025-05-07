@@ -96,6 +96,11 @@ class WebViewController: UIViewController {
         
         // Enabling pop gesture
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        
+        if let completion = completion {
+            completion()
+            self.completion = nil
+        }
     }
 }
 
