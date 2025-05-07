@@ -59,6 +59,7 @@ import Combine
         logger.log("Initialization started", level: .info)
         self.exportData = ExportData()
         self.configuration = configuration
+        onReadyListener?()
         logger.log("Initialization finished", level: .info)
     }
     
