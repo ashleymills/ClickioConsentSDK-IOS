@@ -159,7 +159,6 @@ extension WebViewController: WKScriptMessageHandler {
         logger.log("Ready method was called", level: .info)
         if isWriteCalled { consentUpdatedCallback?() }
         ClickioConsentSDK.shared.updateConsentStatus()
-        completion?()
         self.dismiss(animated: true, completion: nil)
     }
 }

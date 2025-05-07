@@ -22,7 +22,6 @@ public final class ATTManager {
         if #available(iOS 14, *) {
             DispatchQueue.global().async {
                 ATTrackingManager.requestTrackingAuthorization { status in
-                    print(status)
                     DispatchQueue.main.async {
                         completion(status == .authorized)
                     }
