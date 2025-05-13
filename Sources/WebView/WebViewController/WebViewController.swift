@@ -60,7 +60,13 @@ class WebViewController: UIViewController {
         // Initialize the webView with the configuration
         webConfiguration.userContentController = userContentController
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
+        
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        
         webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        
         view.addSubview(webView)
         
         webView.isOpaque = false

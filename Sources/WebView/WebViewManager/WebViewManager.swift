@@ -41,6 +41,9 @@ import WebKit
         webViewController.url = url
         webViewController.completion = completion
         
+        webViewController.modalPresentationStyle = .overFullScreen
+        webViewController.modalTransitionStyle = .crossDissolve
+        
         parentViewController.present(webViewController, animated: true)
     }
     
@@ -59,7 +62,7 @@ import WebKit
         let webViewController = WebViewController()
         webViewController.url = url
         
-        webViewController.modalPresentationStyle = .overCurrentContext
+        webViewController.modalPresentationStyle = .overFullScreen
         parentViewController.present(webViewController, animated: false)
     }
 }
