@@ -310,10 +310,13 @@ private extension ClickioConsentSDK {
         }
         
         var urlComponents = URLComponents(string: baseConsentStatusURL)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "s", value: configuration.siteId),
-            URLQueryItem(name: "v", value: UserDefaults.standard.string(forKey: "CLICKIO_CONSENT_server_request") ?? "")
-        ]
+        var items = [ URLQueryItem(name: "s", value: configuration.siteId) ]
+        if let version = UserDefaults.standard.string(forKey: "CLICKIO_CONSENT_server_request"),
+           version.split(separator: "|").count == 5 {
+            items.append(URLQueryItem(name: "v", value: version))
+        }
+        
+        urlComponents?.queryItems = items
         
         logger.log("Fetching URL: \(urlComponents?.url?.absoluteString ?? "Invalid URL")", level: .debug)
         
