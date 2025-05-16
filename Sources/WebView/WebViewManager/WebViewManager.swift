@@ -44,6 +44,11 @@ import WebKit
         webViewController.modalPresentationStyle = .overFullScreen
         webViewController.modalTransitionStyle = .crossDissolve
         
+        guard NetworkStatusChecker.shared.isConnected else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+                return
+            }
+        
         parentViewController.present(webViewController, animated: true)
     }
     
