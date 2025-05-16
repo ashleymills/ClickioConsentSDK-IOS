@@ -60,7 +60,16 @@ class WebViewController: UIViewController {
         // Initialize the webView with the configuration
         webConfiguration.userContentController = userContentController
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
+        
+        webView.uiDelegate = self
+        webView.navigationDelegate = self
+        
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        
         webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        
         view.addSubview(webView)
         
         webView.isOpaque = false
@@ -68,7 +77,7 @@ class WebViewController: UIViewController {
         webView.scrollView.backgroundColor = .clear
         
         NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.topAnchor),
+            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
@@ -160,5 +169,33 @@ extension WebViewController: WKScriptMessageHandler {
         if isWriteCalled { consentUpdatedCallback?() }
         ClickioConsentSDK.shared.updateConsentStatus()
         self.dismiss(animated: true, completion: nil)
+    }
+}
+
+// MARK: - WKNavigationDelegate
+extension WebViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView,
+                 didFailProvisionalNavigation navigation: WKNavigation!,
+                 withError error: Error) {
+        dismiss(animated: true) {
+            self.completion?()
+            self.logger.log("Failed to open Consent Dialog. Please, try again", level: .error)
+        }
+    }
+}
+
+// MARK: - WKUIDelegate
+extension WebViewController: WKUIDelegate {
+    func webView(_ webView: WKWebView,
+                 createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction,
+                 windowFeatures: WKWindowFeatures) -> WKWebView? {
+        guard navigationAction.targetFrame == nil,
+              let url = navigationAction.request.url else {
+            return nil
+        }
+        
+        UIApplication.shared.open(url)
+        return nil
     }
 }
