@@ -13,6 +13,8 @@ import Combine
     @objc @MainActor public static let shared = ClickioConsentSDK()
     
     // MARK: Properties
+    private let networkChecker: NetworkStatusChecker = NetworkStatusChecker.shared
+    
     private var webViewManager: WebViewManager?
     private(set) var configuration: Config?
     private let logger = EventLogger()
@@ -61,7 +63,10 @@ import Combine
         self.configuration = configuration
         onReadyListener?()
         logger.log("Initialization finished", level: .info)
-        guard NetworkStatusChecker.shared.isConnected else { return }
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
     }
     
     /**
@@ -170,10 +175,11 @@ import Combine
         }
         
         self.webViewManager = WebViewManager(parentViewController: presentingVC)
-        guard NetworkStatusChecker.shared.isConnected else {
-            self.logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
-                return
-            }
+        
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
         
         switch mode {
         case .default:
@@ -274,17 +280,18 @@ private extension ClickioConsentSDK {
         let webviewClosed = {
             Task {
                 await self.fetchConsentStatus()
+                self.updateConsentStatus()
                 DispatchQueue.main.async {
                     self.onConsentUpdatedListener?()
                 }
             }
             completion?()
         }
-        
-        guard NetworkStatusChecker.shared.isConnected else {
+
+        guard networkChecker.isConnectedToNetwork() else {
             logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
-                return
-            }
+            return
+        }
 
         webViewManager?.presentConsentDialog(
             in: parentViewController,
@@ -314,10 +321,10 @@ private extension ClickioConsentSDK {
     func fetchConsentStatus() async {
         logger.log("Started fetching consent status", level: .debug)
         
-        guard NetworkStatusChecker.shared.isConnected else {
+        guard networkChecker.isConnectedToNetwork() else {
             logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
-                return
-            }
+            return
+        }
         
         guard let configuration = configuration else {
             logger.log("Missing configuration", level: .error)

@@ -4,27 +4,38 @@
 //
 
 import Foundation
-import Network
+import SystemConfiguration
 
 // MARK: - NetworkStatusChecker
-@objcMembers public final class NetworkStatusChecker: NSObject, @unchecked Sendable {
-    // MARK: Properties
-    @MainActor public static let shared = NetworkStatusChecker()
-    
-    private let monitor = NWPathMonitor()
-    private let queue = DispatchQueue(label: "NetworkMonitor")
-    public private(set) var isConnected: Bool = false
-    
+@objcMembers public final class NetworkStatusChecker: NSObject {
     // MARK: Initialization
     private override init() {
         super.init()
-        monitor.start(queue: queue)
-        isConnected = (monitor.currentPath.status == .satisfied)
+        self.isConnectedToNetwork()
+    }
+    
+    // MARK: Properties
+    @MainActor public static let shared = NetworkStatusChecker()
+    
+    // MARK: Methods
+    func isConnectedToNetwork() -> Bool {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        zeroAddress.sin_family = sa_family_t(AF_INET)
         
-        monitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
-                self?.isConnected = (path.status == .satisfied)
+        guard let defaultRouteReachability = withUnsafePointer(to: &zeroAddress, {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { zeroSockAddress in
+                SCNetworkReachabilityCreateWithAddress(nil, zeroSockAddress)
             }
+        }) else {
+            return false
         }
+        
+        var flags: SCNetworkReachabilityFlags = []
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
+            return false
+        }
+        
+        return flags.contains(.reachable) && !flags.contains(.connectionRequired)
     }
 }
