@@ -188,79 +188,54 @@ import Combine
                 logger.log("Showing ATT dialog first, then displaying CMP in default mode only if ATT consent is granted", level: .info)
                 ATTManager.shared.requestPermission { isGranted in
                     if isGranted {
-                        Task {
-                            await self.fetchConsentStatus()
-                            if self.consentStatus?.scope == self.gdprScope && self.consentStatus?.force == true {
-                                self.showWebViewManager(
-                                    in: presentingVC,
-                                    language: language,
-                                    completion: completion
-                                )
-                            } else {
-                                self.logger.log("Dialog not shown: decision already saved or user is located outside the EEA, GB, or CH regions", level: .info)
-                            }
-                        }
+                        self.showDefaultDialog(
+                            mode: mode,
+                            in: presentingVC,
+                            language: language,
+                            completion: completion
+                        )
                     } else {
                         self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
                     }
                 }
             } else {
                 logger.log("Bypassing ATT flow as not required and showing CMP in default mode", level: .info)
-                Task {
-                    await fetchConsentStatus()
-                    if consentStatus?.scope == gdprScope && consentStatus?.force == true {
-                        showWebViewManager(
+                self.showDefaultDialog(
+                    mode: mode,
+                    in: presentingVC,
+                    language: language,
+                    completion: completion
+                )
+            }
+            
+        case .resurface:
+            if attNeeded {
+                logger.log("Showing ATT dialog first, then displaying CMP in resurface mode only if ATT consent is granted", level: .info)
+                ATTManager.shared.requestPermission { isGranted in
+                    if isGranted {
+                        // MARK: - ОТРАБОТАЛО!!!
+                        self.showResurfaceDialog(
+                            mode: mode,
                             in: presentingVC,
                             language: language,
                             completion: completion
                         )
                     } else {
-                        self.logger.log("Dialog not shown: decision already saved or user is located outside the EEA, GB, or CH regions", level: .info)
+                        self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
                     }
                 }
-            }
-            
-        case .resurface:
-            if consentStatus?.scope != outOfScope {
-                if attNeeded {
-                    logger.log("Showing ATT dialog first, then displaying CMP in resurface mode only if ATT consent is granted", level: .info)
-                    ATTManager.shared.requestPermission { isGranted in
-                        if isGranted {
-                            Task {
-                                await self.fetchConsentStatus()
-                                if self.consentStatus?.scope != self.outOfScope {
-                                    self.showWebViewManager(
-                                        in: presentingVC,
-                                        language: language,
-                                        completion: completion
-                                    )
-                                } else {
-                                    self.logger.log("Dialog not shown: user is located outside EEA, GB, or CH regions", level: .info)
-                                }
-                            }
-                        } else {
-                            self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
-                        }
-                    }
-                } else {
-                    logger.log("Bypassing ATT flow as not required and showing CMP in resurface mode", level: .info)
-                    Task {
-                        await fetchConsentStatus()
-                        if consentStatus?.scope != outOfScope {
-                            showWebViewManager(
-                                in: presentingVC,
-                                language: language,
-                                completion: completion
-                            )
-                        } else {
-                            self.logger.log("Dialog not shown: user is located outside EEA, GB, or CH regions", level: .info)
-                        }
-                    }
-                }
+            } else {
+                logger.log("Bypassing ATT flow as not required and showing CMP in resurface mode", level: .info)
+                self.showResurfaceDialog(
+                    mode: mode,
+                    in: presentingVC,
+                    language: language,
+                    completion: completion
+                )
             }
         }
     }
-    
+     
     /**
      *  Allows the SDK user to set the logging mode.
      *  - Parameter mode: The desired logging mode.
@@ -270,8 +245,72 @@ import Combine
     }
 }
 
-// MARK: - Handling of consent & ATT permission
+// MARK: - Handling webView dialog appearance
 private extension ClickioConsentSDK {
+    func showDefaultDialog(
+        mode: DialogMode,
+        in vc: UIViewController,
+        language: String?,
+        completion: (() -> Void)?
+    ) {
+        if let fetchedStatus = self.consentStatus {
+            if self.consentStatus?.scope == self.gdprScope && self.consentStatus?.force == true {
+                self.showWebViewManager(
+                    in: vc,
+                    language: language,
+                    completion: completion
+                )
+            } else {
+                self.logger.log("Dialog not shown: decision already saved or user is located outside the EEA, GB, or CH regions", level: .info)
+            }
+        } else {
+            Task {
+                await self.fetchConsentStatus()
+                if self.consentStatus?.scope == self.gdprScope && self.consentStatus?.force == true {
+                    self.showWebViewManager(
+                        in: vc,
+                        language: language,
+                        completion: completion
+                    )
+                } else {
+                    self.logger.log("Dialog not shown: decision already saved or user is located outside the EEA, GB, or CH regions", level: .info)
+                }
+            }
+        }
+    }
+    
+    func showResurfaceDialog(
+        mode: DialogMode,
+        in vc: UIViewController,
+        language: String?,
+        completion: (() -> Void)?
+    ) {
+        if let fetchedStatus = self.consentStatus {
+            if self.consentStatus?.scope != self.outOfScope {
+                self.showWebViewManager(
+                    in: vc,
+                    language: language,
+                    completion: completion
+                )
+            } else {
+                self.logger.log("Dialog not shown: user is located outside EEA, GB, or CH regions", level: .info)
+            }
+        } else {
+            Task {
+                await self.fetchConsentStatus()
+                if self.consentStatus?.scope != self.outOfScope {
+                    self.showWebViewManager(
+                        in: vc,
+                        language: language,
+                        completion: completion
+                    )
+                } else {
+                    self.logger.log("Dialog not shown: user is located outside EEA, GB, or CH regions", level: .info)
+                }
+            }
+        }
+    }
+    
     func showWebViewManager(
         in parentViewController: UIViewController,
         language: String?,
@@ -279,7 +318,6 @@ private extension ClickioConsentSDK {
     ) {
         let webviewClosed = {
             Task {
-                await self.fetchConsentStatus()
                 self.updateConsentStatus()
                 DispatchQueue.main.async {
                     self.onConsentUpdatedListener?()
