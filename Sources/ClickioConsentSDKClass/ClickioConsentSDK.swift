@@ -13,6 +13,8 @@ import Combine
     @objc @MainActor public static let shared = ClickioConsentSDK()
     
     // MARK: Properties
+    private let networkChecker: NetworkStatusChecker = NetworkStatusChecker.shared
+    
     private var webViewManager: WebViewManager?
     private(set) var configuration: Config?
     private let logger = EventLogger()
@@ -59,12 +61,12 @@ import Combine
         logger.log("Initialization started", level: .info)
         self.exportData = ExportData()
         self.configuration = configuration
-        await fetchConsentStatus()
-        
-        if let error = consentStatus?.error {
-            logger.log("Initialization failed: \(error)", level: .error)
-        } else { onReadyListener?() }
+        onReadyListener?()
         logger.log("Initialization finished", level: .info)
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
     }
     
     /**
@@ -173,6 +175,11 @@ import Combine
         }
         
         self.webViewManager = WebViewManager(parentViewController: presentingVC)
+        
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
         
         switch mode {
         case .default:
@@ -318,7 +325,12 @@ private extension ClickioConsentSDK {
             }
             completion?()
         }
-        
+
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
+
         webViewManager?.presentConsentDialog(
             in: parentViewController,
             language: language,
@@ -347,16 +359,27 @@ private extension ClickioConsentSDK {
     func fetchConsentStatus() async {
         logger.log("Started fetching consent status", level: .debug)
         
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
+        
         guard let configuration = configuration else {
             logger.log("Missing configuration", level: .error)
             return
         }
         
         var urlComponents = URLComponents(string: baseConsentStatusURL)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "s", value: configuration.siteId),
-            URLQueryItem(name: "v", value: UserDefaults.standard.string(forKey: "CLICKIO_CONSENT_server_request") ?? "")
-        ]
+        var queryItems: [URLQueryItem] = []
+        
+        queryItems.append(URLQueryItem(name: "s", value: configuration.siteId))
+        
+        if let version = UserDefaults.standard.string(forKey: "CLICKIO_CONSENT_server_request"),
+           !version.isEmpty {
+            queryItems.append(URLQueryItem(name: "v", value: version))
+        }
+        
+        urlComponents?.queryItems = queryItems
         
         logger.log("Fetching URL: \(urlComponents?.url?.absoluteString ?? "Invalid URL")", level: .debug)
         
@@ -365,7 +388,7 @@ private extension ClickioConsentSDK {
         let sessionConfig = URLSessionConfiguration.default
         sessionConfig.timeoutIntervalForRequest = 10
         sessionConfig.timeoutIntervalForResource = 10
-        sessionConfig.waitsForConnectivity = true
+        sessionConfig.waitsForConnectivity = false
         
         let session = URLSession(configuration: sessionConfig)
         

@@ -12,6 +12,7 @@
 		C41A0DF82D88B29A00519174 /* AirBridgeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41A0DF72D88B29A00519174 /* AirBridgeChecker.swift */; };
 		C41A0DFB2D88B63E00519174 /* AppsFlyerChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41A0DFA2D88B63E00519174 /* AppsFlyerChecker.swift */; };
 		C4325CAD2D9AB7D500F72035 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C4325CAC2D9AB7D500F72035 /* PrivacyInfo.xcprivacy */; };
+		C4914DD62DD6298800466C25 /* NetworkStatusChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4914DD52DD6298800466C25 /* NetworkStatusChecker.swift */; };
 		C4CF27102D83396E008E8BA2 /* WebViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF270D2D83396E008E8BA2 /* WebViewManager.swift */; };
 		C4CF27112D83396E008E8BA2 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF270B2D83396E008E8BA2 /* WebViewController.swift */; };
 		C4CF27122D83396E008E8BA2 /* ClickioConsentSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF27002D83396E008E8BA2 /* ClickioConsentSDK.swift */; };
@@ -28,6 +29,7 @@
 		C41A0DF72D88B29A00519174 /* AirBridgeChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirBridgeChecker.swift; sourceTree = "<group>"; };
 		C41A0DFA2D88B63E00519174 /* AppsFlyerChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerChecker.swift; sourceTree = "<group>"; };
 		C4325CAC2D9AB7D500F72035 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C4914DD52DD6298800466C25 /* NetworkStatusChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkStatusChecker.swift; sourceTree = "<group>"; };
 		C4CF26F02D8338FE008E8BA2 /* ClickioConsentSDKManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ClickioConsentSDKManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4CF26FE2D83396E008E8BA2 /* ATTManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTManager.swift; sourceTree = "<group>"; };
 		C4CF27002D83396E008E8BA2 /* ClickioConsentSDK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickioConsentSDK.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 		C41A0DF22D88A81A00519174 /* Checkers */ = {
 			isa = PBXGroup;
 			children = (
+				C4914DD42DD6297700466C25 /* NetworkStatusChecker */,
 				C41A0DF92D88B62B00519174 /* AppsFlyerChecker */,
 				C41A0DF62D88B28B00519174 /* AirBridgeChecker */,
 				C41A0DF32D88A84000519174 /* AdjustChecker */,
@@ -91,6 +94,14 @@
 				C41A0DFA2D88B63E00519174 /* AppsFlyerChecker.swift */,
 			);
 			path = AppsFlyerChecker;
+			sourceTree = "<group>";
+		};
+		C4914DD42DD6297700466C25 /* NetworkStatusChecker */ = {
+			isa = PBXGroup;
+			children = (
+				C4914DD52DD6298800466C25 /* NetworkStatusChecker.swift */,
+			);
+			path = NetworkStatusChecker;
 			sourceTree = "<group>";
 		};
 		C4CF26E62D8338FD008E8BA2 = {
@@ -296,6 +307,7 @@
 				C4CF27132D83396E008E8BA2 /* ConsentStatusDTO.swift in Sources */,
 				C4CF27142D83396E008E8BA2 /* ConsentDataManager.swift in Sources */,
 				C41A0DF12D887D1900519174 /* FirebaseChecker.swift in Sources */,
+				C4914DD62DD6298800466C25 /* NetworkStatusChecker.swift in Sources */,
 				C41A0DFB2D88B63E00519174 /* AppsFlyerChecker.swift in Sources */,
 				C4CF27152D83396E008E8BA2 /* ATTManager.swift in Sources */,
 				C4CF27162D83396E008E8BA2 /* EventLogger.swift in Sources */,
@@ -329,7 +341,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = "1.0.6-rc";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ClickioConsentSDKManager;
@@ -370,7 +382,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = "1.0.6-rc";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ClickioConsentSDKManager;
@@ -444,7 +456,7 @@
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app collects and tracks your usage data for the purpose of delivering personalized advertisements and measuring ad performance. By using this app, you acknowledge and agree that your information may be processed and shared with our advertising partners.";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = "1.0.6-rc";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -506,7 +518,7 @@
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app collects and tracks your usage data for the purpose of delivering personalized advertisements and measuring ad performance. By using this app, you acknowledge and agree that your information may be processed and shared with our advertising partners.";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = "1.0.6-rc";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

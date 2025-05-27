@@ -9,6 +9,7 @@ import WebKit
 // MARK: - WebViewManager
 @MainActor @objcMembers final class WebViewManager: NSObject {
     // MARK: Properties
+    private let networkChecker: NetworkStatusChecker = NetworkStatusChecker.shared
     private let logger = EventLogger()
     private var configuration: ClickioConsentSDK.Config?
     private let baseConsentURL = "https://clickiocmp.com/t/static/consent_app.html?"
@@ -41,6 +42,14 @@ import WebKit
         webViewController.url = url
         webViewController.completion = completion
         
+        webViewController.modalPresentationStyle = .overFullScreen
+        webViewController.modalTransitionStyle = .crossDissolve
+        
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
+
         parentViewController.present(webViewController, animated: true)
     }
     
@@ -59,7 +68,7 @@ import WebKit
         let webViewController = WebViewController()
         webViewController.url = url
         
-        webViewController.modalPresentationStyle = .overCurrentContext
+        webViewController.modalPresentationStyle = .overFullScreen
         parentViewController.present(webViewController, animated: false)
     }
 }
