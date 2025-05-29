@@ -476,12 +476,12 @@ Sometimes you need to ensure that both Apple's App Tracking Transparency prompt 
 -   First present the ATT prompt.
 -   Then open Clickio SDK's consent dialog via `ClickioConsentSDK.shared.openDialog(...)`.
 
-3.  **Use Clickio SDK's callbacks**
+2.  **Use Clickio SDK's callbacks**
 
 -   In the `onReady` callback, you know the ATT flow is done and the CMP dialog can be shown.
 -   In the `onConsentUpdated` callback, you know the user's consent decision has been recorded.
 
-5.  **Initialize and load ads only after consent**
+3.  **Initialize and load ads only after consent**
 
 -   Inside `onConsentUpdated` & `onReady` callbacks, ensure that `checkConsentState() != gdprNoDecision` has been confirmed.
 -   Then call `MobileAds.shared.start(...)` and load your banner.
