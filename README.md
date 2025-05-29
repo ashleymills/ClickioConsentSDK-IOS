@@ -6,6 +6,7 @@
 - [ExportData](#exportdata)
 - [Integration with Third-Party Libraries for Google Consent Mode](#integration-with-third-party-libraries-for-google-consent-mode)
 - [Integration with Third-Party Libraries when Google Consent Mode is disabled](#integration-with-third-party-libraries-when-google-consent-mode-is-disabled)
+- [Delaying Google Mobile Ads display until ATT and User Consent](#delaying-google-mobile-ads-display-until-att-and-user-consent)
 
 ## Requirements
 
@@ -461,5 +462,69 @@ let consentSettings: [ConsentType: ConsentStatus] = [
 Analytics.setConsent(consentSettings)
 }
 ```
-
 [More about Consent Mode flags mapping with TCF and non-TCF purposes](https://docs.clickio.com/books/clickio-consent-cmp/page/google-consent-mode-v2-implementation#bkmrk-5.1.-tcf-mode)
+
+
+# Delaying Google Mobile Ads display until ATT and User Consent
+
+  
+
+Sometimes you need to ensure that both Apple's App Tracking Transparency prompt and user consent decision have been recorded before initializing and loading Google Mobile Ads. To implement this flow:
+
+1.  **Wait for ATT authorization and CMP readiness**
+
+-   First present the ATT prompt.
+-   Then open Clickio SDK's consent dialog via `ClickioConsentSDK.shared.openDialog(...)`.
+
+3.  **Use Clickio SDK's callbacks**
+
+-   In the `onReady` callback, you know the ATT flow is done and the CMP dialog can be shown.
+-   In the `onConsentUpdated` callback, you know the user's consent decision has been recorded.
+
+5.  **Initialize and load ads only after consent**
+
+-   Inside `onConsentUpdated` & `onReady` callbacks, ensure that `checkConsentState() != gdprNoDecision` has been confirmed.
+-   Then call `MobileAds.shared.start(...)` and load your banner.
+
+This ensures that Google Mobile Ads is only started—and the banner only fetched—once you've obtained both ATT permission and explicit user decision from the CMP.
+
+**Note: Avoid double-starting**
+
+– E.g. if ads already started on initial accept, don’t restart after a later “resurface” consent change.  
+
+**Code example:**
+```Swift
+// Keep track of whether Google Mobile Ads has already been started
+private var adsStarted = false
+
+func setupConsentAndAds() {
+    // 1) Listen for SDK ready (ATT done, CMP can show)
+    ClickioConsentSDK.shared.onReady { 
+        // 2) Show CMP
+        ClickioConsentSDK.shared.openDialog(mode: .default, attNeeded: true)
+
+        // 3) Immediately check prior consent
+        self.tryStartAdsIfAllowed()
+    }
+
+    // 4) When consent changes, check again
+    ClickioConsentSDK.shared.onConsentUpdated {
+        self.tryStartAdsIfAllowed()
+    }
+}
+
+private func tryStartAdsIfAllowed() {
+    guard let state = ClickioConsentSDK.shared.checkConsentState(),
+          state != .gdprNoDecision else { return }
+
+    // 5) Only start once
+    guard !adsStarted else {
+        print("Ads already started")
+        return
+    }
+
+    print("Consent allows ads – starting Google Mobile Ads")
+    GADMobileAds.sharedInstance().start(completionHandler: nil)
+    adsStarted = true
+}
+```
