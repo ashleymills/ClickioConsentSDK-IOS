@@ -478,7 +478,7 @@ Sometimes you need to ensure that both Apple's App Tracking Transparency prompt 
 
 2.  **Use Clickio SDK's callbacks**
 
--   In the `onReady` callback, you know the ATT flow is done and the CMP dialog can be shown.
+-   In the `onReady` callback, you know that SDK is ready & the CMP dialog can be shown.
 -   In the `onConsentUpdated` callback, you know the user's consent decision has been recorded.
 
 3.  **Initialize and load ads only after consent**
@@ -486,7 +486,7 @@ Sometimes you need to ensure that both Apple's App Tracking Transparency prompt 
 -   Inside `onConsentUpdated` & `onReady` callbacks, ensure that `checkConsentState() != gdprNoDecision` has been confirmed.
 -   Then call `MobileAds.shared.start(...)` and load your banner.
 
-This ensures that Google Mobile Ads is only started—and the banner only fetched—once you've obtained both ATT permission and explicit user decision from the CMP.
+This ensures that Google Mobile Ads is only started — and the banner only fetched — once you've obtained both ATT permission and explicit user decision from the CMP.
 
 **Note: Avoid double-starting**
 
@@ -498,7 +498,7 @@ This ensures that Google Mobile Ads is only started—and the banner only fetche
 private var adsStarted = false
 
 func setupConsentAndAds() {
-    // 1) Listen for SDK ready (ATT done, CMP can show)
+    // 1) Listen for SDK ready (CMP can show)
     ClickioConsentSDK.shared.onReady { 
         // 2) Show CMP
         ClickioConsentSDK.shared.openDialog(mode: .default, attNeeded: true)
