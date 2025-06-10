@@ -20,7 +20,7 @@ Before integrating `ClickioConsentSDKManager` (hereinafter reffered to as the `C
  **Swift Package Manager**
 -   File > Swift Packages > Add Package Dependency
 -   Add  `https://github.com/ClickioTech/ClickioConsentSDK-IOS.git`
--   Select "Up to Next Major" with "1.0.5"
+-   Select "Up to Next Major" with "1.0.6"
 
  **CocoaPods**  
  -   You can install ClickioConsentSDKManager pod from CocoaPods library:  
@@ -29,7 +29,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', '~> 1.0.5'
+  pod 'ClickioConsentSDKManager', '~> 1.0.6'
 end
 ```
 
@@ -39,7 +39,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.5'
+  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.6'
 end
 ```
 
