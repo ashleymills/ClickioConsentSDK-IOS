@@ -371,6 +371,9 @@ struct GoogleConsentStatus (
     var adStorageGranted = false
     var adUserDataGranted = false
     var adPersonalizationGranted = false
+    var functionalityStorageGranted = false
+    var personalizationStorageGranted = false
+    var securityStorageGranted = false
 )
 ```
 Represents the status of Google Consent Mode.
@@ -379,6 +382,9 @@ Represents the status of Google Consent Mode.
 -   `adStorageGranted`  — Consent for ad storage.
 -   `adUserDataGranted`  — Consent for processing user data for ads.
 -   `adPersonalizationGranted`  — Consent for ad personalization.
+-   `functionalityStorageGranted`  — Consent for functionality storage.
+-   `personalizationStorageGranted`  — Consent for personalization storage.
+-   `securityStorageGranted`  — Consent for security storage.
 
 # Integration with Third-Party Libraries for Google Consent Mode
 

@@ -52,11 +52,17 @@ import Foundation
         let analyticsStorageString = userDefaults.string(forKey: "CLICKIO_CONSENT_GOOGLE_ANALYTICS_analyticsStorage")
         let adUserDataString = userDefaults.string(forKey: "CLICKIO_CONSENT_GOOGLE_ANALYTICS_adUserData")
         let adPersonalizationString = userDefaults.string(forKey: "CLICKIO_CONSENT_GOOGLE_ANALYTICS_adPersonalization")
+        let functionalityStorageString = userDefaults.string(forKey: "CLICKIO_CONSENT_GOOGLE_ANALYTICS_functionalityStorage")
+        let personalizationStorageString = userDefaults.string(forKey: "CLICKIO_CONSENT_GOOGLE_ANALYTICS_personalizationStorage")
+        let securityStorageString = userDefaults.string(forKey: "CLICKIO_CONSENT_GOOGLE_ANALYTICS_securityStorage")
         
         if adStorageString?.isEmpty == true
             && analyticsStorageString?.isEmpty == true
             && adUserDataString?.isEmpty == true
-            && adPersonalizationString?.isEmpty == true {
+            && adPersonalizationString?.isEmpty == true
+            && functionalityStorageString?.isEmpty == true
+            && personalizationStorageString?.isEmpty == true
+            && securityStorageString?.isEmpty == true {
             return nil
         }
         
@@ -64,7 +70,10 @@ import Foundation
             analyticsStorageGranted: analyticsStorageString == granted,
             adStorageGranted: adStorageString == granted,
             adUserDataGranted: adUserDataString == granted,
-            adPersonalizationGranted: adPersonalizationString == granted
+            adPersonalizationGranted: adPersonalizationString == granted,
+            functionalityStorageGranted: functionalityStorageString == granted,
+            personalizationStorageGranted: personalizationStorageString == granted,
+            securityStorageGranted: securityStorageString == granted
         )
     }
     
@@ -148,4 +157,7 @@ public struct GoogleConsentStatus {
     public var adStorageGranted = false
     public var adUserDataGranted = false
     public var adPersonalizationGranted = false
+    public var functionalityStorageGranted = false
+    public var personalizationStorageGranted = false
+    public var securityStorageGranted = false
 }
