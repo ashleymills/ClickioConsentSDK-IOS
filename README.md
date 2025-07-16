@@ -391,7 +391,6 @@ Represents the status of Google Consent Mode.
 #### Important:
   - Interactions with `ClickioConsentSDK` should be performed **after initializing the third-party SDKs** since `ClickioConsentSDK` only transmits consent flags.
   - **Ensure** that you have completed the required tracking setup for Adjust, Airbridge, or AppsFlyer before integrating `ClickioConsentSDK`. This includes proper initialization and configuration of the SDK according to the vendor’s documentation.
-  - If you're using **AppsFlyer** and need to support GDPR compliance via TCF, make sure to enable TCF data collection before SDK initialization: `enableTCFDataCollection(true)`. This allows AppsFlyer to automatically gather consent values (like `tcString`) from the CMP.
   
 ### Firebase Analytics
 
