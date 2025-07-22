@@ -20,7 +20,7 @@ Before integrating `ClickioConsentSDKManager` (hereinafter reffered to as the `C
  **Swift Package Manager**
 -   File > Swift Packages > Add Package Dependency
 -   Add  `https://github.com/ClickioTech/ClickioConsentSDK-IOS.git`
--   Select "Up to Next Major" with "1.0.6"
+-   Select "Up to Next Major" with "1.0.7"
 
  **CocoaPods**  
  -   You can install ClickioConsentSDKManager pod from CocoaPods library:  
@@ -29,7 +29,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', '~> 1.0.6'
+  pod 'ClickioConsentSDKManager', '~> 1.0.7'
 end
 ```
 
@@ -39,7 +39,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.6'
+  pod 'ClickioConsentSDKManager', :git => 'https://github.com/ClickioTech/ClickioConsentSDK-IOS.git', :tag => '1.0.7'
 end
 ```
 
@@ -371,6 +371,9 @@ struct GoogleConsentStatus (
     var adStorageGranted = false
     var adUserDataGranted = false
     var adPersonalizationGranted = false
+    var functionalityStorageGranted = false
+    var personalizationStorageGranted = false
+    var securityStorageGranted = false
 )
 ```
 Represents the status of Google Consent Mode.
@@ -379,6 +382,9 @@ Represents the status of Google Consent Mode.
 -   `adStorageGranted`  — Consent for ad storage.
 -   `adUserDataGranted`  — Consent for processing user data for ads.
 -   `adPersonalizationGranted`  — Consent for ad personalization.
+-   `functionalityStorageGranted`  — Consent for functionality storage.
+-   `personalizationStorageGranted`  — Consent for personalization storage.
+-   `securityStorageGranted`  — Consent for security storage.
 
 # Integration with Third-Party Libraries for Google Consent Mode
 
