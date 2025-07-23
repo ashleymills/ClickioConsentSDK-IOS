@@ -54,6 +54,29 @@ import WebKit
     }
     
     /**
+     *  Presents a WebViewController configured with custom layout
+     */
+    func presentCustomWebView(
+        in parentViewController: UIViewController,
+        url: URL,
+        config: WebViewConfig,
+        completion: (() -> Void)? = nil
+    ) {
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
+        
+        let webVC = WebViewController()
+        webVC.url = url
+        webVC.customConfig = config
+        webVC.completion = completion
+        webVC.modalPresentationStyle = .overFullScreen
+        webVC.modalTransitionStyle = .crossDissolve
+        parentViewController.present(webVC, animated: true)
+    }
+    
+    /**
      *  Programmatically triggers the CMP’s “reject to all” action within the WebView, required for recommended ATT flow.
      */
     func rejectToAll(in parentViewController: UIViewController) {

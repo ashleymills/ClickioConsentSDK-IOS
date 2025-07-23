@@ -14,6 +14,7 @@ class WebViewController: UIViewController {
     var isWriteCalled = false
     var completion: (() -> Void)?
     private var logger = EventLogger()
+    var customConfig: WebViewConfig?
     private let consentUpdatedCallback = ClickioConsentSDK.shared.getConsentUpdatedCallback()
     
     // MARK: Methods
@@ -73,15 +74,48 @@ class WebViewController: UIViewController {
         view.addSubview(webView)
         
         webView.isOpaque = false
-        webView.backgroundColor = .clear
-        webView.scrollView.backgroundColor = .clear
+        webView.backgroundColor = customConfig?.backgroundColor ?? .clear
+        webView.scrollView.backgroundColor = customConfig?.backgroundColor ?? .clear
         
-        NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
+        // Layout constraints based on custom config
+             if let cfg = customConfig {
+                 if let w = cfg.width {
+                     webView.widthAnchor.constraint(equalToConstant: w).isActive = true
+                 } else {
+                     webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+                     webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+                 }
+                 if let h = cfg.height {
+                     webView.heightAnchor.constraint(equalToConstant: h).isActive = true
+                 } else {
+                     webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+                     webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+                 }
+                 // Vertical position
+                 switch cfg.gravity {
+                 case .top:
+                     NSLayoutConstraint.activate([
+                         webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+                     ])
+                 case .center:
+                     NSLayoutConstraint.activate([
+                         webView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                         webView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+                     ])
+                 case .bottom:
+                     NSLayoutConstraint.activate([
+                        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+                     ])
+                 }
+             } else {
+                 // Default full screen
+                 NSLayoutConstraint.activate([
+                     webView.topAnchor.constraint(equalTo:  view.safeAreaLayoutGuide.topAnchor),
+                     webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                     webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                     webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+                 ])
+             }
         
         if let url = url {
             let request = URLRequest(url: url)

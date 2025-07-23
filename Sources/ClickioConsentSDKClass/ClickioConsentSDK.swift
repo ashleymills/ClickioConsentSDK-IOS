@@ -213,7 +213,6 @@ import Combine
                 logger.log("Showing ATT dialog first, then displaying CMP in resurface mode only if ATT consent is granted", level: .info)
                 ATTManager.shared.requestPermission { isGranted in
                     if isGranted {
-                        // MARK: - ОТРАБОТАЛО!!!
                         self.showResurfaceDialog(
                             mode: mode,
                             in: presentingVC,
@@ -226,7 +225,7 @@ import Combine
                 }
             } else {
                 logger.log("Bypassing ATT flow as not required and showing CMP in resurface mode", level: .info)
-                self.showResurfaceDialog(
+                showResurfaceDialog(
                     mode: mode,
                     in: presentingVC,
                     language: language,
@@ -473,6 +472,67 @@ extension ClickioConsentSDK {
             self.siteId = siteId
             self.appLanguage = appLanguage
             super.init()
+        }
+    }
+}
+
+// MARK: - ClickioConsentSDK Extension for Custom URL Loading
+public extension ClickioConsentSDK {
+    /// Opens a custom WebView with provided URL and layout config
+    func webViewLoadUrl(
+        urlString: String,
+        attNeeded: Bool,
+        config: WebViewConfig = WebViewConfig(),
+        in parentViewController: UIViewController? = nil,
+        completion: (() -> Void)? = nil
+    ) {
+        guard let url = URL(string: urlString) else {
+            logger.log("Invalid URL: \(urlString)", level: .error)
+            return
+        }
+        
+        let presentingVC: UIViewController
+        if let parent = parentViewController {
+            presentingVC = parent
+        } else if let rootVC = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?.rootViewController {
+            presentingVC = rootVC
+        } else {
+            logger.log("No available ViewController for custom WebView presentation", level: .error)
+            return
+        }
+        
+        self.webViewManager = WebViewManager(parentViewController: presentingVC)
+        
+        guard networkChecker.isConnectedToNetwork() else {
+            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
+            return
+        }
+        
+        if attNeeded {
+            logger.log("Showing ATT dialog first, then displaying custom CMP only if ATT consent is granted", level: .info)
+            ATTManager.shared.requestPermission { isGranted in
+                if isGranted {
+                    self.webViewManager?.presentCustomWebView(
+                        in: presentingVC,
+                        url: url,
+                        config: config,
+                        completion: completion
+                    )
+                } else {
+                    self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
+                }
+            }
+        } else {
+            logger.log("Bypassing ATT flow as not required and showing custom CMP", level: .info)
+            webViewManager?.presentCustomWebView(
+                in: presentingVC,
+                url: url,
+                config: config,
+                completion: completion
+            )
         }
     }
 }
