@@ -13,6 +13,7 @@ import WebKit
     private let logger = EventLogger()
     private var configuration: ClickioConsentSDK.Config?
     private let baseConsentURL = "https://clickiocmp.com/t/static/consent_app.html?"
+    private weak var currentWebVC: WebViewController?
     
     // MARK: Initialization
     init(parentViewController: UIViewController) {
@@ -54,7 +55,7 @@ import WebKit
     }
     
     /**
-     *  Presents a WebViewController configured with custom layout
+     *  Presents a WebViewController configured with custom layout.
      */
     func presentCustomWebView(
         in parentViewController: UIViewController,
@@ -70,11 +71,23 @@ import WebKit
         let webVC = WebViewController()
         webVC.url = url
         webVC.customConfig = config
+        webVC.autoDismissOnReady = false
         webVC.completion = completion
         webVC.modalPresentationStyle = .overFullScreen
         webVC.modalTransitionStyle = .crossDissolve
+        self.currentWebVC = webVC
         parentViewController.present(webVC, animated: true)
     }
+    
+    /**
+     * Dismisses a WebViewController configured with custom layout.
+     */
+    public func dismissCustomWebView(animated: Bool = true) {
+          guard let webVC = currentWebVC else { return }
+          webVC.dismiss(animated: animated) {
+              self.currentWebVC = nil
+          }
+      }
     
     /**
      *  Programmatically triggers the CMP’s “reject to all” action within the WebView, required for recommended ATT flow.

@@ -12,6 +12,7 @@ class WebViewController: UIViewController {
     var webView: WKWebView!
     var url: URL?
     var isWriteCalled = false
+    var autoDismissOnReady: Bool = true
     var completion: (() -> Void)?
     private var logger = EventLogger()
     var customConfig: WebViewConfig?
@@ -50,6 +51,10 @@ class WebViewController: UIViewController {
                 console.log('[WebView Log] clickioSDK.ready called');
                 window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'ready' });
                 if (originalReady) originalReady.apply(this, arguments);
+            };
+        
+            window.clickioSDK.close = function() {
+                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'close' });
             };
         })();
         """
@@ -166,6 +171,10 @@ extension WebViewController: WKScriptMessageHandler {
             }
         case "ready":
             handleReadyAction()
+        case "close":
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true, completion: nil)
+                }
         default:
             break
         }
@@ -201,7 +210,18 @@ extension WebViewController: WKScriptMessageHandler {
     private func handleReadyAction() {
         logger.log("Ready method was called", level: .info)
         ClickioConsentSDK.shared.updateConsentStatus()
-        self.dismiss(animated: true, completion: nil)
+        if autoDismissOnReady {
+            self.dismiss(animated: true, completion: nil)
+        } else {
+            let js = """
+                   (function(){
+                     const dlg = document.querySelector('[data-clickio-cmp]') ||
+                                 document.querySelector('.cmp-container');
+                     if (dlg) dlg.style.display = 'none';
+                   })();
+                   """
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
     }
 }
 

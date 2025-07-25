@@ -152,7 +152,6 @@ import Combine
      * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
      * - Parameter in parentViewController: optional, defines view controller on which WebView should be presented.
      * - Parameter attNeeded: `true` if ATT is necessary.
-     * - language:   An optional parameter to force the UI language.
      */
     public func openDialog(
         mode: DialogMode = .default,
@@ -476,9 +475,15 @@ extension ClickioConsentSDK {
     }
 }
 
-// MARK: - ClickioConsentSDK Extension for Custom URL Loading
+// MARK: - Custom WebView manipulations
 public extension ClickioConsentSDK {
-    /// Opens a custom WebView with provided URL and layout config
+    /**
+     *  Opens ta custom WebView with provided URL and layout config.
+     * - Parameter urlString: webView URL.
+     * - Parameter attNeeded: `true` if ATT is necessary.
+     * - Parameter config: config object that describes WebView parameters: backgroundColor, width, height, gravity.
+     * - Parameter in parentViewController: optional, defines view controller on which WebView should be presented.
+     */
     func webViewLoadUrl(
         urlString: String,
         attNeeded: Bool,
@@ -534,6 +539,14 @@ public extension ClickioConsentSDK {
                 completion: completion
             )
         }
+    }
+    
+    /**
+     * Forcibly closes custom webView.
+     */
+    @MainActor
+    func closeCustomWebView(animated: Bool = true) {
+        webViewManager?.dismissCustomWebView(animated: animated)
     }
 }
 
