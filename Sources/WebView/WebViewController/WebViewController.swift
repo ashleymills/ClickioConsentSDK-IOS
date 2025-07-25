@@ -53,8 +53,8 @@ class WebViewController: UIViewController {
                 if (originalReady) originalReady.apply(this, arguments);
             };
         
-            window.clickioSDK.close = function() {
-                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'close' });
+            window.clickioSDK.closeCustomWebView = function() {
+                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'closeCustomWebView' });
             };
         })();
         """
@@ -171,10 +171,10 @@ extension WebViewController: WKScriptMessageHandler {
             }
         case "ready":
             handleReadyAction()
-        case "close":
-                DispatchQueue.main.async {
-                    self.dismiss(animated: true, completion: nil)
-                }
+        case "closeCustomWebView":
+            DispatchQueue.main.async {
+                ClickioConsentSDK.shared.closeCustomWebView(animated: true)
+            }
         default:
             break
         }
