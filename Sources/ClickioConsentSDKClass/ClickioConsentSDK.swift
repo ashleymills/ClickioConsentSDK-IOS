@@ -478,75 +478,22 @@ extension ClickioConsentSDK {
 // MARK: - Custom WebView manipulations
 public extension ClickioConsentSDK {
     /**
-     *  Opens ta custom WebView with provided URL and layout config.
+     *  Opens a custom WebView with provided URL and layout config.
      * - Parameter urlString: webView URL.
-     * - Parameter attNeeded: `true` if ATT is necessary.
      * - Parameter config: config object that describes WebView parameters: backgroundColor, width, height, gravity.
-     * - Parameter in parentViewController: optional, defines view controller on which WebView should be presented.
      */
     func webViewLoadUrl(
         urlString: String,
-        attNeeded: Bool,
-        config: WebViewConfig = WebViewConfig(),
-        in parentViewController: UIViewController? = nil,
-        completion: (() -> Void)? = nil
-    ) {
+        config: WebViewConfig = WebViewConfig()
+    ) -> WebViewController {
         guard let url = URL(string: urlString) else {
-            logger.log("Invalid URL: \(urlString)", level: .error)
-            return
+            fatalError("Invalid URL: \(urlString)")
         }
         
-        let presentingVC: UIViewController
-        if let parent = parentViewController {
-            presentingVC = parent
-        } else if let rootVC = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow })?.rootViewController {
-            presentingVC = rootVC
-        } else {
-            logger.log("No available ViewController for custom WebView presentation", level: .error)
-            return
-        }
-        
-        self.webViewManager = WebViewManager(parentViewController: presentingVC)
-        
-        guard networkChecker.isConnectedToNetwork() else {
-            logger.log("Bad network connection. Please ensure you are connected to the internet and try again", level: .error)
-            return
-        }
-        
-        if attNeeded {
-            logger.log("Showing ATT dialog first, then displaying custom CMP only if ATT consent is granted", level: .info)
-            ATTManager.shared.requestPermission { isGranted in
-                if isGranted {
-                    self.webViewManager?.presentCustomWebView(
-                        in: presentingVC,
-                        url: url,
-                        config: config,
-                        completion: completion
-                    )
-                } else {
-                    self.logger.log("Dialog not shown: user rejected ATT permission", level: .info)
-                }
-            }
-        } else {
-            logger.log("Bypassing ATT flow as not required and showing custom CMP", level: .info)
-            webViewManager?.presentCustomWebView(
-                in: presentingVC,
-                url: url,
-                config: config,
-                completion: completion
-            )
-        }
-    }
-    
-    /**
-     * Forcibly closes custom webView.
-     */
-    @MainActor
-    func closeCustomWebView(animated: Bool = true) {
-        webViewManager?.dismissCustomWebView(animated: animated)
+        let webViewController = WebViewController()
+        webViewController.url = url
+        webViewController.customConfig = config
+        return webViewController
     }
 }
 

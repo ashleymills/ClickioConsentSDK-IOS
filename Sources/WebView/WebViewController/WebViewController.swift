@@ -7,65 +7,84 @@ import UIKit
 import WebKit
 
 // MARK: - WebViewController
-class WebViewController: UIViewController {
+public final class WebViewController: UIViewController {
     // MARK: Properties
     var webView: WKWebView!
     var url: URL?
     var isWriteCalled = false
-    var autoDismissOnReady: Bool = true
     var completion: (() -> Void)?
     private var logger = EventLogger()
     var customConfig: WebViewConfig?
     private let consentUpdatedCallback = ClickioConsentSDK.shared.getConsentUpdatedCallback()
     
+    fileprivate let sharedProcessPool = WKProcessPool()
+    
     // MARK: Methods
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
-        self.isModalInPresentation = true
+//        self.isModalInPresentation = true
         // WebView configuration
         let webConfiguration = WKWebViewConfiguration()
+        webConfiguration.processPool = sharedProcessPool
+        let sharedDataStore = WKWebsiteDataStore.default()
+        
         let userContentController = WKUserContentController()
         
-        // Adding the script that communicates with the web content
-        let scriptSource = """
-        (function() {
-            window.clickioSDK = window.clickioSDK || {};
-        
-            const originalWrite = window.clickioSDK.write;
-            const originalRead = window.clickioSDK.read;
-            const originalReady = window.clickioSDK.ready;
-        
-            window.clickioSDK.write = function(data) {
-                console.log('[WebView Log] clickioSDK.write called with:', data);
-                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'write', data: data });
-                if (originalWrite) originalWrite.apply(this, arguments);
-            };
-        
-            window.clickioSDK.read = function(key) {
-                console.log('[WebView Log] clickioSDK.read called with key:', key);
-                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'read', data: key });
-                if (originalRead) originalRead.apply(this, arguments);
-            };
-        
-            window.clickioSDK.ready = function() {
-                console.log('[WebView Log] clickioSDK.ready called');
-                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'ready' });
-                if (originalReady) originalReady.apply(this, arguments);
-            };
-        
-            window.clickioSDK.closeCustomWebView = function() {
-                window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'closeCustomWebView' });
-            };
-        })();
-        """
-        
-        let script = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        userContentController.addUserScript(script)
-        userContentController.add(self, name: "clickioSDK")
+        if customConfig != nil {
+            let readBridge = """
+            (function() {
+                window.clickioSDK = window.clickioSDK || {};
+                const originalRead = window.clickioSDK.read;
+            
+                window.clickioSDK.read = function(key) {
+                    window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'read', data: key });
+                    if (originalRead) originalRead.apply(this, arguments);
+                };
+            })();
+            """
+            userContentController.addUserScript(
+                WKUserScript(
+                    source: readBridge,
+                    injectionTime: .atDocumentStart,
+                    forMainFrameOnly: false
+                )
+            )
+        } else {
+            let fullBridge = """
+            (function() {
+                window.clickioSDK = window.clickioSDK || {};
+                const originalWrite = window.clickioSDK.write;
+                const originalRead = window.clickioSDK.read;
+                const originalReady = window.clickioSDK.ready;
+
+                window.clickioSDK.write = function(data) {
+                    window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'write', data });
+                    if (originalWrite) originalWrite.apply(this, arguments);
+                };
+
+                window.clickioSDK.read = function(key) {
+                    window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'read', data: key });
+                    if (originalRead) originalRead.apply(this, arguments);
+                };
+
+                window.clickioSDK.ready = function() {
+                    window.webkit.messageHandlers.clickioSDK.postMessage({ action: 'ready' });
+                    if (originalReady) originalReady.apply(this, arguments);
+                };
+            })();
+            """
+            
+            userContentController.addUserScript(WKUserScript(
+                source: fullBridge,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: false))
+        }
         
         // Initialize the webView with the configuration
         webConfiguration.userContentController = userContentController
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
+        
+        userContentController.add(self, name: "clickioSDK")
         
         webView.uiDelegate = self
         webView.navigationDelegate = self
@@ -128,7 +147,7 @@ class WebViewController: UIViewController {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
+    public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Hiding navigation bar
         navigationController?.setNavigationBarHidden(true, animated: animated)
@@ -137,7 +156,7 @@ class WebViewController: UIViewController {
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
+    public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // Returning navigation bar
         navigationController?.setNavigationBarHidden(false, animated: animated)
@@ -160,23 +179,26 @@ extension WebViewController: WKScriptMessageHandler {
               let body = message.body as? [String: Any],
               let action = body["action"] as? String else { return }
         
-        switch action {
-        case "write":
-            if let jsonString = body["data"] as? String {
-                handleWriteAction(jsonString: jsonString)
-            }
-        case "read":
+        if customConfig != nil {
+            guard action == "read" else { return }
             if let key = body["data"] as? String {
                 handleReadAction(key: key)
             }
-        case "ready":
-            handleReadyAction()
-        case "closeCustomWebView":
-            DispatchQueue.main.async {
-                ClickioConsentSDK.shared.closeCustomWebView(animated: true)
+        } else {
+            switch action {
+            case "write":
+                if let jsonString = body["data"] as? String {
+                    handleWriteAction(jsonString: jsonString)
+                }
+            case "read":
+                if let key = body["data"] as? String {
+                    handleReadAction(key: key)
+                }
+            case "ready":
+                handleReadyAction()
+            default:
+                break
             }
-        default:
-            break
         }
     }
     
@@ -210,24 +232,13 @@ extension WebViewController: WKScriptMessageHandler {
     private func handleReadyAction() {
         logger.log("Ready method was called", level: .info)
         ClickioConsentSDK.shared.updateConsentStatus()
-        if autoDismissOnReady {
-            self.dismiss(animated: true, completion: nil)
-        } else {
-            let js = """
-                   (function(){
-                     const dlg = document.querySelector('[data-clickio-cmp]') ||
-                                 document.querySelector('.cmp-container');
-                     if (dlg) dlg.style.display = 'none';
-                   })();
-                   """
-            webView.evaluateJavaScript(js, completionHandler: nil)
-        }
+        self.dismiss(animated: true, completion: nil)
     }
 }
 
 // MARK: - WKNavigationDelegate
 extension WebViewController: WKNavigationDelegate {
-    func webView(_ webView: WKWebView,
+    public func webView(_ webView: WKWebView,
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
         dismiss(animated: true) {
@@ -239,7 +250,7 @@ extension WebViewController: WKNavigationDelegate {
 
 // MARK: - WKUIDelegate
 extension WebViewController: WKUIDelegate {
-    func webView(_ webView: WKWebView,
+    public func webView(_ webView: WKWebView,
                  createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
