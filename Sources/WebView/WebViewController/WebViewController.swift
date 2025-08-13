@@ -22,7 +22,6 @@ public final class WebViewController: UIViewController {
     // MARK: Methods
     public override func viewDidLoad() {
         super.viewDidLoad()
-//        self.isModalInPresentation = true
         // WebView configuration
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.processPool = sharedProcessPool
@@ -261,5 +260,25 @@ extension WebViewController: WKUIDelegate {
         
         UIApplication.shared.open(url)
         return nil
+    }
+}
+
+// MARK: - Cleanup
+extension WebViewController {
+    /*
+     Safely release webview resources and detach handlers — call before removing the controller.
+     */
+    public func cleanup() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let wk = self.webView {
+                wk.navigationDelegate = nil
+                wk.uiDelegate = nil
+                wk.stopLoading()
+                wk.configuration.userContentController.removeScriptMessageHandler(forName: "clickioSDK")
+            }
+            // avoid retaining cycles
+            self.completion = nil
+        }
     }
 }
