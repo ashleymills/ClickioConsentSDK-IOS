@@ -152,7 +152,6 @@ import Combine
      * - Parameter language: optional, two-letter language code (e.g. en) - forces UI language.
      * - Parameter in parentViewController: optional, defines view controller on which WebView should be presented.
      * - Parameter attNeeded: `true` if ATT is necessary.
-     * - language:   An optional parameter to force the UI language.
      */
     public func openDialog(
         mode: DialogMode = .default,
@@ -213,7 +212,6 @@ import Combine
                 logger.log("Showing ATT dialog first, then displaying CMP in resurface mode only if ATT consent is granted", level: .info)
                 ATTManager.shared.requestPermission { isGranted in
                     if isGranted {
-                        // MARK: - ОТРАБОТАЛО!!!
                         self.showResurfaceDialog(
                             mode: mode,
                             in: presentingVC,
@@ -226,7 +224,7 @@ import Combine
                 }
             } else {
                 logger.log("Bypassing ATT flow as not required and showing CMP in resurface mode", level: .info)
-                self.showResurfaceDialog(
+                showResurfaceDialog(
                     mode: mode,
                     in: presentingVC,
                     language: language,
@@ -474,6 +472,28 @@ extension ClickioConsentSDK {
             self.appLanguage = appLanguage
             super.init()
         }
+    }
+}
+
+// MARK: - Custom WebView manipulations
+public extension ClickioConsentSDK {
+    /**
+     *  Returns  a custom WebViewController with provided URL and layout config.
+     * - Parameter urlString: webView URL.
+     * - Parameter config: config object that describes WebView parameters: backgroundColor, width, height, gravity.
+     */
+    func webViewLoadUrl(
+        urlString: String,
+        config: WebViewConfig = WebViewConfig()
+    ) -> WebViewController {
+        guard let url = URL(string: urlString) else {
+            fatalError("Invalid URL: \(urlString)")
+        }
+        
+        let webViewController = WebViewController()
+        webViewController.url = url
+        webViewController.customConfig = config
+        return webViewController
     }
 }
 
