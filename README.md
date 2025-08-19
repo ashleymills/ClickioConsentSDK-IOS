@@ -472,8 +472,6 @@ Analytics.setConsent(consentSettings)
 
 # Delaying Google Mobile Ads display until ATT and User Consent
 
-  
-
 Sometimes you need to ensure that both Apple's App Tracking Transparency prompt and user consent decision have been recorded before initializing and loading Google Mobile Ads. To implement this flow:
 
 1.  **Wait for ATT authorization and CMP readiness**
@@ -531,5 +529,160 @@ private func tryStartAdsIfAllowed() {
     print("Consent allows ads – starting Google Mobile Ads")
     GADMobileAds.sharedInstance().start(completionHandler: nil)
     adsStarted = true
+}
+```
+
+
+# WebView consent synchronization
+
+### Overview
+When an iOS app contains both native UI (built with Swift/Objective-C) and web content inside a WKWebView (for example, embedded pages or widgets), there is a risk the Consent Management Platform (CMP) dialog will appear twice — once from the native SDK and again inside the web page.
+
+The `webViewLoadUrl(urlString:config:)` method helps synchronize consent between the native and web layers. It configures a WKWebView (injecting a small clickioSDK JS bridge and message handler), ensures the web page can read/write the same saved consent state, and returns a ready-to-use WebViewController for your integration.
+
+It does not present the controller for you — **the host app is responsible for how to show and hide it** (present (modally or not), add as a child/overlay, or embed as a platform view in Flutter/React-Native) **and for cleaning it up when it’s no longer needed**.
+
+#### Tip: use `webViewLoadUrl` whenever you need to display web content that must respect the user’s consent already stored natively.
+
+```swift
+func webViewLoadUrl(
+        urlString: String, // accepts your webView's URL
+        config: WebViewConfig = WebViewConfig() // accepts config object that describes your WebView's parameters: backgroundColor, width, height, gravity.
+    ) -> WebViewController 
+```
+
+### Configuration
+```swift  
+  public struct WebViewConfig {
+    public var backgroundColor: UIColor = .clear // default value - .clear
+    public var width: CGFloat? // nil = full width
+    public var height: CGFloat? // nil = full height
+    public var gravity: WebViewGravity = .center // default value - .center
+}
+        
+    public enum WebViewGravity {
+    case top, center, bottom
+}
+```
+
+### Intregration examples
+
+#### UIKit example
+```swift 
+// WebViewController set-up
+let config = WebViewConfig(
+    backgroundColor: .cyan,
+    width: 280,
+    height: 280,
+    gravity: .center
+)
+
+let webVC = ClickioConsentSDK.shared.webViewLoadUrl(
+    urlString: "https://example.com", // your's webView URL
+    config: config
+)
+
+// Embed webVC as a child view controller and insert its view into this controller's view hierarchy.
+// Call didMove(toParent:) to finish the containment handshake so the child is fully active.
+addChild(webVC)
+view.addSubview(webVC.view)
+webVC.didMove(toParent: self)
+
+addChild(webVC)
+view.addSubview(webVC.view)
+webVC.didMove(toParent: self)
+
+// Constraints set-up
+webVC.view.translatesAutoresizingMaskIntoConstraints = false
+NSLayoutConstraint.activate([
+    webVC.view.widthAnchor.constraint(equalToConstant: 280),
+    webVC.view.heightAnchor.constraint(equalToConstant: 280),
+    webVC.view.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+    webVC.view.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+])
+``` 
+
+#### When removing, don't forget to call the appropriate methods and clean up delegates/handlers through SDK's `cleanup` method that safely releases webview resources and detach handlers:
+```
+webVC.willMove(toParent: nil)
+webVC.cleanup() // cleanup the resources
+webVC.view.removeFromSuperview()
+webVC.removeFromParent()
+```
+
+#### SwiftUI example
+Create a `UIViewControllerRepresentable` wrapper that returns the WebViewController produced by `ClickioConsentSDK.shared.webViewLoadUrl(...)`.
+```swift
+// MARK: - UIViewControllerRepresentable wrapper
+struct CustomWebViewControllerRepresentable: UIViewControllerRepresentable {
+    let urlString: String // your webView's URL
+    let config: WebViewConfig
+    
+    // returns the prepared WebViewController from webViewLoadUrl
+    func makeUIViewController(context: Context) -> WebViewController {
+        // Create WebViewController through the SDK
+        let webVC = ClickioConsentSDK.shared.webViewLoadUrl(
+            urlString: urlString,
+            config: config
+        )
+        return webVC
+    }
+    
+    func updateUIViewController(_ uiViewController: WebViewController, context: Context) { }
+    
+    static func dismantleUIViewController(_ uiViewController: WebViewController, coordinator: ()) {
+        DispatchQueue.main.async {
+            // Best practice: call a cleanup() method on the controller that cancels loads,
+            // clears delegates and removes script message handlers.
+            uiViewController.cleanup()
+        }
+    }
+}
+```
+#### Note: To close the overlay, either (a) add an on-screen close button that sets the flag to false, or (b) provide an SDK callback/registration so the web content can request closing (recommended if you need web-driven close).
+#### When removed, SwiftUI calls `dismantleUIViewController`, so call `webVC.cleanup()` there — stop loading, nil delegates, and remove the script message handler.
+
+Use a @State flag (for example showCustomWeb) to show/hide the wrapper in your view tree (sheet, overlay, inline, etc.).
+```swift
+@State private var showCustomWeb = false
+```
+
+Show / hide in SwiftUI (overlay example):
+```swift
+var body: some View {
+    ZStack {
+        // your main UI...
+
+        if showCustomWeb {
+            ZStack(alignment: .topTrailing) {
+            // The representable wrapper that embeds the native WebViewController.
+                CustomWebViewControllerRepresentable(
+                     urlString: "https://example.com", // your webView's URL
+                     config: WebViewConfig(
+                             backgroundColor: UIColor.cyan,
+                             width: 280,
+                             height: 280,
+                             gravity: .center
+                           )
+                )
+                .frame(width: 280, height: 280)
+                .cornerRadius(12)
+                .shadow(radius: 6)
+
+                // OPTIONAL: Add a close button overlay that simply flips the SwiftUI state flag.
+                // When `showCustomWeb` becomes false, SwiftUI removes the representable and calls dismantle().
+                Button(action: { showCustomWeb = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .resizable()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.black)
+                }
+                .padding()
+                .offset(x: 8, y: -8)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .zIndex(1)
+        }
+    }
 }
 ```
