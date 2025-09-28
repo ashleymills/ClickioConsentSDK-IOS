@@ -45,7 +45,7 @@ import Combine
     /**
      * Updates consent status.
      */
-    func updateConsentStatus() {
+    public func updateConsentStatus() {
         if var status = consentStatus {
             status.force = false
             consentStatus = status
