@@ -9,7 +9,7 @@ import WebKit
 // MARK: - WebViewController
 public final class WebViewController: UIViewController {
     // MARK: Properties
-    var webView: WKWebView!
+    @objc public var webView: WKWebView!
     var url: URL?
     var isWriteCalled = false
     var completion: (() -> Void)?
