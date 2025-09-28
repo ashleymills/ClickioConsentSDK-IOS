@@ -25,6 +25,7 @@ public final class WebViewController: UIViewController {
         // WebView configuration
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.processPool = sharedProcessPool
+        webConfiguration.allowsInlineMediaPlayback = true
         let sharedDataStore = WKWebsiteDataStore.default()
         
         let userContentController = WKUserContentController()
