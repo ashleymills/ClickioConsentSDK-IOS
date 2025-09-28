@@ -37,7 +37,7 @@ import Combine
      * Updates multiple keys in UserDefaults from a JSON string.
      * - Parameter jsonString: The JSON string with updated data.
      */
-    @MainActor func updateFromJson(jsonString: String) -> Bool {
+    @MainActor public func updateFromJson(jsonString: String) -> Bool {
         guard let data = jsonString.data(using: .utf8) else {
             logger.log("Failed to convert jsonString to Data", level: .error)
             return false
